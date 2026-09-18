@@ -59,8 +59,10 @@ export default function ServicesPage() {
       </section>
       <section className="bg-parchment/40 py-24">
         <div className="mx-auto max-w-6xl px-5">
-          <p className="eyebrow">Stations</p>
-          <h2 className="mt-3 font-display text-4xl">Street feasts & wildcards</h2>
+          <Reveal>
+            <p className="eyebrow">Stations</p>
+            <h2 className="mt-3 font-display text-4xl">Street feasts & wildcards</h2>
+          </Reveal>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {streetFood.map((item) => (
               <Reveal key={item.title}>

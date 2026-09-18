@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "./CartProvider";
@@ -8,6 +8,10 @@ import { formatGbp } from "@/lib/products";
 
 export function CartDrawer() {
   const { open, setOpen, detailed, subtotal, setQuantity, remove } = useCart();
+  const reduceMotion = useReducedMotion();
+  const slide = reduceMotion
+    ? { duration: 0 }
+    : { type: "spring" as const, damping: 28, stiffness: 260 };
 
   return (
     <AnimatePresence>
@@ -16,17 +20,17 @@ export function CartDrawer() {
           <motion.button
             aria-label="Close cart"
             className="fixed inset-0 z-[70] bg-ink/40"
-            initial={{ opacity: 0 }}
+            initial={reduceMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={reduceMotion ? undefined : { opacity: 0 }}
             onClick={() => setOpen(false)}
             type="button"
           />
           <motion.aside
-            initial={{ x: "100%" }}
+            initial={reduceMotion ? false : { x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 260 }}
+            exit={reduceMotion ? undefined : { x: "100%" }}
+            transition={slide}
             className="fixed right-0 top-0 z-[71] flex h-full w-full max-w-md flex-col bg-cream text-ink shadow-soft"
             role="dialog"
             aria-label="Shopping bag"
@@ -90,7 +94,7 @@ export function CartDrawer() {
                 <span>{formatGbp(subtotal)}</span>
               </p>
               <p className="mt-2 text-xs text-muted">
-                Demo checkout only — no Stripe charge is taken.
+                Demo checkout only — nothing is charged.
               </p>
               <Link
                 href="/shop/checkout"

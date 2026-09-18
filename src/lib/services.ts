@@ -17,7 +17,7 @@ export const services = [
     blurb:
       "Food people actually enjoy — not generic trays. Offices, warehouses, launches and away-days, 20 to 2,000 guests.",
     details:
-      "Clear pricing, labelled allergens, and a team that arrives on time. LinkedIn and corporate calendars are part of the HighLevel plan when this demo goes live.",
+      "Clear pricing, labelled allergens, and a team that arrives on time. Boardrooms, warehouses, launches and away-days — written into their own diary.",
   },
   {
     slug: "buffets",
@@ -47,7 +47,7 @@ export const services = [
     blurb:
       "Sit the menu before you book the day. A private tasting to lock flavours, wines, and service style.",
     details:
-      "Booked on its own HighLevel calendar so it never collides with a wedding diary.",
+      "Held on its own tasting diary so it never collides with a wedding day.",
   },
   {
     slug: "sauce-club",
@@ -57,7 +57,7 @@ export const services = [
     blurb:
       "Bottled house sauces from the street-food tents — a shop-shaped taste of Chef Lucas between events.",
     details:
-      "Demo shop only. Ready for GHL products and Stripe deposits when eCommerce is switched on.",
+      "Demo shop only. Nothing is charged. A taste of the tents between events.",
     href: "/shop",
   },
 ];

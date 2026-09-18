@@ -3,7 +3,7 @@ import { Reveal } from "./Reveal";
 
 export function CtaBand({
   title = "Shall we cook for you?",
-  body = "Tell us the shape of the day. The enquiry lands in HighLevel as a named opportunity — tagged, dated, and waiting for a human reply.",
+  body = "Tell us the shape of the day. A chef still replies in person — dated, named, and waiting for a human conversation.",
   href = "/book",
   label = "Begin an enquiry",
 }: {

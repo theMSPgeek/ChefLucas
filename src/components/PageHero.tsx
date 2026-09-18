@@ -24,7 +24,7 @@ export function PageHero({
       />
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/20" />
       <div className="relative mx-auto flex min-h-[58vh] max-w-6xl flex-col justify-end px-5 pb-16 pt-28">
-        <Reveal>
+        <Reveal immediate duration={0.65}>
           <p className="eyebrow text-gold">{eyebrow}</p>
           <h1 className="mt-4 max-w-3xl font-display text-5xl leading-[1.05] sm:text-7xl">
             {title}

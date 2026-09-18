@@ -75,7 +75,7 @@ export const products: Product[] = [
     name: "Chef Lucas canvas tote",
     price: 18,
     blurb: "Heavy cream canvas, serif lockup, market-day duty.",
-    details: "Demo merch. Fulfilment via GHL products when live.",
+    details: "Demo merch. Shown as a taste of the lockup, not a live dispatch.",
     image: "/images/logo.png",
     ghlEnv: "GHL_PRODUCT_TOTE",
     tag: "product/tote",

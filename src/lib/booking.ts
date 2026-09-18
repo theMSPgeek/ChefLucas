@@ -13,7 +13,7 @@ export const bookingTypes = [
     eyebrow: "Hospitality",
     summary:
       "Board lunches, away-days, product launches and staff celebrations.",
-    nextAction: "Qualified briefing → menu proposal → deposit invoice",
+    nextAction: "Briefing → menu proposal → deposit invoice",
   },
   {
     id: "buffet",
@@ -45,7 +45,7 @@ export const bookingTypes = [
     eyebrow: "Bespoke",
     summary:
       "Greek street food, Fiesta Mexicana, burger bars, or a hybrid feast.",
-    nextAction: "Concept call → tagged opportunity in New enquiry",
+    nextAction: "Concept call → we write it down as a custom enquiry",
   },
 ] as const;
 
@@ -85,21 +85,21 @@ export const bookingJourney = [
   {
     step: "01",
     title: "A conversation first",
-    body: "Every live booking starts with a call. The wizard captures the fields HighLevel needs so that conversation is already tagged.",
+    body: "Every booking starts with a call. These notes mean that conversation already knows the day.",
   },
   {
     step: "02",
-    title: "New enquiry",
-    body: "Opportunity named Event | Date | Guests | Surname, stage New enquiry, calendar matched to the event type.",
+    title: "The enquiry",
+    body: "We keep the occasion, date, guest count, and who to write to — so nothing arrives as a nameless message.",
   },
   {
     step: "03",
     title: "Proposal & contract",
-    body: "Menus, service setup, and a digital booking form. Twenty percent deposit locks the date — Stripe via GHL when connected.",
+    body: "Menus, service setup, and a booking form. Twenty percent deposit locks the date.",
   },
   {
     step: "04",
     title: "Two-week check-in",
-    body: "Final guest count, allergens, and arrival time. Workflows fire the reminder; the chefs still speak to you in person.",
+    body: "Final guest count, allergens, and arrival time. The chefs still speak to you in person.",
   },
 ];

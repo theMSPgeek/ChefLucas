@@ -4,7 +4,7 @@ import { PageHero } from "@/components/PageHero";
 
 export const metadata: Metadata = {
   title: "Checkout",
-  description: "Demo sauce-shop checkout. Stripe is stubbed; no live charges.",
+  description: "Demo sauce-shop checkout. Nothing is charged.",
 };
 
 export default function CheckoutPage() {
@@ -13,7 +13,7 @@ export default function CheckoutPage() {
       <PageHero
         eyebrow="Demo checkout"
         title="A bag, not a bill."
-        lede="We collect the same CRM fields as a catering enquiry so a shop lead can sit in the same pipeline, tagged product/sauce-club."
+        lede="Leave your details with the bag. This is a demo checkout — nothing is charged, and a chef still confirms before anything is sent."
         image="/images/hero-banner.png"
       />
       <section className="mx-auto max-w-5xl px-5 py-20">

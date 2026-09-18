@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
@@ -44,6 +44,7 @@ export function BookingWizard() {
   const [error, setError] = useState("");
 
   const selected = bookingTypes.find((type) => type.id === draft.eventType);
+  const reduceMotion = useReducedMotion();
 
   function update<K extends keyof BookingDraft>(key: K, value: BookingDraft[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -82,22 +83,17 @@ export function BookingWizard() {
         <p className="eyebrow">Received</p>
         <h2 className="mt-4 font-display text-4xl">Thank you — we have the shape of the day.</h2>
         <p className="mt-4 max-w-xl text-sm leading-7 text-muted">
-          In a live HighLevel account this would land as a named opportunity in{" "}
-          <strong>New enquiry</strong>, tagged by event type, with a calendar hold on the
-          matching diary. A chef still calls before anything is locked.
+          A chef still calls before anything is locked. This is a demo confirmation —
+          not a live booking.
         </p>
         <dl className="mt-8 space-y-3 text-sm">
           <div className="flex justify-between gap-4 border-b border-line py-2">
-            <dt className="text-muted">Opportunity name</dt>
+            <dt className="text-muted">Your enquiry</dt>
             <dd className="text-right font-medium">{result.opportunityName}</dd>
-          </div>
-          <div className="flex justify-between gap-4 border-b border-line py-2">
-            <dt className="text-muted">Mode</dt>
-            <dd>{result.forwarded ? "Forwarded to GHL webhook" : "Demo success — webhook not connected"}</dd>
           </div>
         </dl>
         <p className="mt-6 text-xs tracking-[0.14em] uppercase text-gold-deep">
-          Next in the managed story: discovery call → proposal → 20% deposit invoice
+          Next: a conversation, then a proposal, then a 20% deposit to lock the date
         </p>
       </div>
     );
@@ -120,16 +116,17 @@ export function BookingWizard() {
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            initial={{ opacity: 0, y: 12 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.35 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: -8 }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
             {step === 0 && (
               <fieldset>
                 <legend className="font-display text-3xl">What are we cooking for?</legend>
                 <p className="mt-2 text-sm text-muted">
-                  Each type maps to its own HighLevel calendar when this demo is wired.
+                  Choose the kitchen that fits the day — wedding, boardroom, buffet,
+                  private table, tasting, or something we invent together.
                 </p>
                 <div className="mt-8 grid gap-3 sm:grid-cols-2">
                   {bookingTypes.map((type) => (
@@ -244,7 +241,7 @@ export function BookingWizard() {
                     className="field"
                   />
                 </Field>
-                <Field label="Company (corporate leads)" htmlFor="companyName" className="sm:col-span-2">
+                <Field label="Company (if this is for work)" htmlFor="companyName" className="sm:col-span-2">
                   <input
                     id="companyName"
                     value={draft.companyName}
@@ -284,12 +281,7 @@ export function BookingWizard() {
               <div>
                 <h2 className="font-display text-3xl">Review the enquiry</h2>
                 <p className="mt-2 text-sm text-muted">
-                  This becomes a HighLevel opportunity named{" "}
-                  <em>
-                    {selected?.label || "Event"} | date | {draft.guestCount || "—"}pax |{" "}
-                    {draft.lastName || "surname"}
-                  </em>
-                  .
+                  Please check the details. We will use these to shape the conversation.
                 </p>
                 <dl className="mt-6 divide-y divide-line text-sm">
                   <Row label="Type" value={selected?.label} />
