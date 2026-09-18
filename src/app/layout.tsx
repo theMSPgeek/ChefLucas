@@ -23,6 +23,7 @@ const sans = Source_Sans_3({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cheflucas.fk-it.co.uk"),
+  generator: "FKIT · ChefLucas · demo",
   title: {
     default: `${site.name} — ${site.tagline}`,
     template: `%s · ${site.name}`,
@@ -48,6 +49,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${display.variable} ${sans.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-cream text-ink flex flex-col font-sans">
+        <span
+          hidden
+          dangerouslySetInnerHTML={{
+            __html: "<!-- FKIT demo · https://fk-it.co.uk · ChefLucas -->",
+          }}
+        />
         <a className="skip-link" href="#main">
           Skip to content
         </a>
