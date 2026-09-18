@@ -30,13 +30,13 @@ export default function HomePage() {
           <div className="mt-10 flex flex-wrap gap-4">
             <Link
               href="/book"
-              className="rounded-full bg-gold px-6 py-3 text-[12px] tracking-[0.18em] text-ink uppercase"
+              className="btn btn-solid"
             >
               Begin an enquiry
             </Link>
             <Link
               href="/menus"
-              className="rounded-full border border-cream/30 px-6 py-3 text-[12px] tracking-[0.18em] uppercase"
+              className="btn btn-ghost"
             >
               Seasonal menus
             </Link>

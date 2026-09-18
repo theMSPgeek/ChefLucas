@@ -14,13 +14,13 @@ export default function OpenGraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#14110e",
-          color: "#f3eee4",
+          background: "#0E0E0E",
+          color: "#F5F0E8",
           padding: "72px",
           fontFamily: "Georgia, serif",
         }}
       >
-        <div style={{ fontSize: 18, letterSpacing: 8, color: "#c4a574" }}>
+        <div style={{ fontSize: 18, letterSpacing: 8, color: "#B8956A" }}>
           CHEF LUCAS CATERING
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -31,7 +31,7 @@ export default function OpenGraphImage() {
             Weddings · Corporate · Buffets · Private kitchens
           </div>
         </div>
-        <div style={{ fontSize: 18, color: "#c4a574" }}>A demo by FKIT</div>
+        <div style={{ fontSize: 18, color: "#B8956A" }}>Demo by FKIT · not live booking</div>
       </div>
     ),
     size,

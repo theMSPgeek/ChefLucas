@@ -20,12 +20,12 @@ export function CtaBand({
           <h2 className="mt-4 font-display text-4xl sm:text-5xl">{title}</h2>
           <p className="mt-4 text-sm leading-7 text-parchment/80">{body}</p>
         </div>
-        <Link
-          href={href}
-          className="rounded-full bg-gold px-6 py-3 text-[12px] tracking-[0.18em] text-ink uppercase"
-        >
-          {label}
-        </Link>
+          <Link
+            href={href}
+            className="btn btn-ghost"
+          >
+            {label}
+          </Link>
       </Reveal>
     </section>
   );

@@ -60,14 +60,14 @@ export function Header() {
           >
             Shop bag
             {count > 0 && (
-              <span className="absolute right-0 top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] text-ink">
+              <span className="absolute right-0 top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-[4px] border border-gold px-1 text-[10px] text-gold">
                 {count}
               </span>
             )}
           </button>
           <Link
             href="/book"
-            className="hidden rounded-full bg-gold px-4 py-2 text-[12px] tracking-[0.16em] text-ink uppercase sm:inline-flex"
+            className="btn btn-solid hidden sm:inline-flex"
           >
             Book
           </Link>

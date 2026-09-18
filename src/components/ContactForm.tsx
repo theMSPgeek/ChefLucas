@@ -42,7 +42,7 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-5 border border-line bg-cream px-6 py-8">
+    <form onSubmit={onSubmit} className="grid gap-5 card px-6 py-8">
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="text-sm">
           <span className="mb-2 block text-[11px] tracking-[0.16em] uppercase text-muted">
@@ -79,7 +79,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={status === "sending"}
-        className="rounded-full bg-ink px-6 py-3 text-[12px] tracking-[0.16em] text-cream uppercase disabled:opacity-40"
+        className="btn btn-solid disabled:opacity-40"
       >
         {status === "sending" ? "Sending…" : "Send a note"}
       </button>

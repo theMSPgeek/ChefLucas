@@ -78,7 +78,7 @@ export function BookingWizard() {
 
   if (result) {
     return (
-      <div className="border border-line bg-cream px-6 py-10 sm:px-10">
+      <div className="border border-line bg-warm px-6 py-10 sm:px-10 rounded-[10px]">
         <p className="eyebrow">Received</p>
         <h2 className="mt-4 font-display text-4xl">Thank you — we have the shape of the day.</h2>
         <p className="mt-4 max-w-xl text-sm leading-7 text-muted">
@@ -104,7 +104,7 @@ export function BookingWizard() {
   }
 
   return (
-    <div className="border border-line bg-cream">
+    <div className="border border-line bg-warm rounded-[10px]">
       <ol className="grid grid-cols-5 border-b border-line text-center text-[10px] tracking-[0.16em] uppercase sm:text-[11px]">
         {steps.map((label, index) => (
           <li
@@ -135,10 +135,10 @@ export function BookingWizard() {
                   {bookingTypes.map((type) => (
                     <label
                       key={type.id}
-                      className={`cursor-pointer border px-4 py-4 transition ${
+                      className={`cursor-pointer rounded-[10px] border px-4 py-4 transition ${
                         draft.eventType === type.id
-                          ? "border-gold bg-parchment/40"
-                          : "border-line hover:border-gold/60"
+                          ? "border-gold bg-warm"
+                          : "border-line bg-warm hover:border-gold/60"
                       }`}
                     >
                       <input
@@ -329,7 +329,7 @@ export function BookingWizard() {
               type="button"
               disabled={!canNext}
               onClick={() => setStep((s) => s + 1)}
-              className="rounded-full bg-ink px-6 py-3 text-[12px] tracking-[0.16em] text-cream uppercase disabled:opacity-40"
+              className="btn btn-solid disabled:opacity-40"
             >
               Continue
             </button>
@@ -338,7 +338,7 @@ export function BookingWizard() {
               type="button"
               disabled={submitting}
               onClick={submit}
-              className="rounded-full bg-gold px-6 py-3 text-[12px] tracking-[0.16em] text-ink uppercase disabled:opacity-40"
+              className="btn btn-solid disabled:opacity-40"
             >
               {submitting ? "Sending…" : "Send enquiry"}
             </button>

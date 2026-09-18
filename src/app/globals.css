@@ -1,32 +1,49 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-ink: #14110e;
-  --color-charcoal: #1c1814;
-  --color-cream: #f3eee4;
-  --color-parchment: #e7dccb;
-  --color-gold: #c4a574;
-  --color-gold-deep: #9a7b4f;
-  --color-muted: #6f675c;
-  --color-line: rgba(196, 165, 116, 0.28);
+  --color-ink: #0e0e0e;
+  --color-charcoal: #1a1a1a;
+  --color-cream: #f5f0e8;
+  --color-warm: #fcfaf6;
+  --color-parchment: #f5f0e8;
+  --color-gold: #b8956a;
+  --color-gold-deep: #b8956a;
+  --color-muted: #8a847a;
+  --color-line: rgba(14, 14, 14, 0.12);
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
-  --shadow-soft: 0 30px 80px -40px rgba(20, 17, 14, 0.55);
+  --shadow-soft: 0 24px 60px -48px rgba(14, 14, 14, 0.4);
+  --radius-card: 10px;
 }
 
 html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 body {
   background: var(--color-cream);
-  color: var(--color-ink);
+  color: var(--color-charcoal);
   font-family: var(--font-sans), system-ui, sans-serif;
-  letter-spacing: -0.011em;
+  font-size: 15px;
+  letter-spacing: 0;
 }
 
 ::selection {
-  background: var(--color-gold);
+  background: color-mix(in srgb, var(--color-gold) 35%, var(--color-cream));
   color: var(--color-ink);
 }
 
@@ -36,15 +53,15 @@ body {
 
 .gold-rule {
   height: 1px;
-  width: 4.5rem;
-  background: linear-gradient(90deg, var(--color-gold), transparent);
+  width: 3.5rem;
+  background: var(--color-gold);
 }
 
 .eyebrow {
-  font-size: 0.72rem;
-  letter-spacing: 0.28em;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--color-gold-deep);
+  color: var(--color-gold);
   font-weight: 500;
 }
 
@@ -71,13 +88,41 @@ select {
 .field {
   width: 100%;
   border: 1px solid var(--color-line);
-  background: transparent;
-  padding: 0.75rem 0.9rem;
-  color: var(--color-ink);
+  background: var(--color-warm);
+  padding: 0.7rem 0.85rem;
+  color: var(--color-charcoal);
+  border-radius: 8px;
 }
 
 .field::placeholder {
-  color: #9a9286;
+  color: var(--color-muted);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 0.7rem 1.25rem;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.btn-solid {
+  background: var(--color-charcoal);
+  color: var(--color-cream);
+}
+
+.btn-ghost {
+  border: 1px solid color-mix(in srgb, var(--color-gold) 55%, transparent);
+  color: inherit;
+}
+
+.card {
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-warm);
 }
 
 input:focus-visible,
@@ -85,6 +130,6 @@ textarea:focus-visible,
 select:focus-visible,
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 1px solid var(--color-gold);
   outline-offset: 3px;
 }

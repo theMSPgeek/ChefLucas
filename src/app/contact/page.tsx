@@ -32,12 +32,12 @@ export default function ContactPage() {
               {site.email}
             </a>
           </address>
-          <div className="mt-8 flex gap-5 text-[12px] tracking-[0.16em] uppercase">
+          <div className="mt-8 flex flex-col gap-3 text-[12px] tracking-[0.16em] uppercase">
             <a href={site.instagram} rel="noreferrer" target="_blank">
-              Instagram
+              Instagram @cheflucastoborek
             </a>
-            <a href={site.facebook} rel="noreferrer" target="_blank">
-              Facebook
+            <a href={site.linkedin} rel="noreferrer" target="_blank">
+              LinkedIn CLSC Ltd
             </a>
             <a href={site.trustpilot} rel="noreferrer" target="_blank">
               Trustpilot

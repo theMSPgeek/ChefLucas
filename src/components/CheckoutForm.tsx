@@ -111,7 +111,7 @@ export function CheckoutForm() {
         <button
           type="submit"
           disabled={status === "sending"}
-          className="rounded-full bg-gold px-6 py-3 text-[12px] tracking-[0.16em] text-ink uppercase disabled:opacity-40"
+          className="btn btn-solid disabled:opacity-40"
         >
           {status === "sending" ? "Placing demo order…" : "Place demo order"}
         </button>
@@ -120,7 +120,7 @@ export function CheckoutForm() {
           never creates a PaymentIntent.
         </p>
       </form>
-      <aside className="border border-line bg-parchment/30 p-6">
+      <aside className="card p-6">
         <p className="eyebrow">Bag</p>
         <ul className="mt-4 space-y-3 text-sm">
           {detailed.map(({ product, quantity }) => (

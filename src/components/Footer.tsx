@@ -14,13 +14,13 @@ export function Footer() {
             height={96}
             className="h-14 w-auto"
           />
-          <p className="mt-6 max-w-sm text-sm leading-7 text-parchment/80">
+          <p className="mt-6 max-w-sm text-sm leading-7 text-cream/75">
             {site.tagline} Polish and European kitchens, nationwide from Burton-on-Trent.
           </p>
         </div>
         <div>
           <p className="eyebrow">Visit</p>
-          <ul className="mt-4 space-y-2 text-sm text-parchment/80">
+          <ul className="mt-4 space-y-2 text-sm text-cream/75">
             {nav.map((item) => (
               <li key={item.href}>
                 <Link className="hover:text-gold" href={item.href}>
@@ -37,7 +37,7 @@ export function Footer() {
         </div>
         <div>
           <p className="eyebrow">Studio</p>
-          <address className="mt-4 not-italic text-sm leading-7 text-parchment/80">
+          <address className="mt-4 not-italic text-sm leading-7 text-cream/75">
             {site.address}
             <br />
             <a className="hover:text-gold" href={site.phoneHref}>
@@ -48,11 +48,29 @@ export function Footer() {
               {site.email}
             </a>
           </address>
+          <div className="mt-6 flex flex-col gap-2 text-sm">
+            <a
+              className="hover:text-gold"
+              href={site.instagram}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Instagram @cheflucastoborek
+            </a>
+            <a
+              className="hover:text-gold"
+              href={site.linkedin}
+              rel="noreferrer"
+              target="_blank"
+            >
+              LinkedIn CLSC Ltd
+            </a>
+          </div>
         </div>
       </div>
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-6 text-[12px] tracking-[0.08em] text-parchment/60 sm:flex-row sm:items-center sm:justify-between">
-          <p>Demo site — not live bookings. Imagery attributed as a demo from cheflucas.co.uk.</p>
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-6 text-[12px] tracking-[0.06em] text-cream/55 sm:flex-row sm:items-center sm:justify-between">
+          <p>Demo by FKIT · not live booking. Imagery from cheflucas.co.uk, shown as a demo.</p>
           <p>
             Powered by{" "}
             <a

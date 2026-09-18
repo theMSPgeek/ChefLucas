@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Outfit } from "next/font/google";
+import { Newsreader, Source_Sans_3 } from "next/font/google";
 import { DemoBanner } from "@/components/DemoBanner";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -7,17 +7,17 @@ import { Providers } from "@/components/Providers";
 import { site } from "@/lib/site";
 import "./globals.css";
 
-const display = Cormorant_Garamond({
+const display = Newsreader({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
 });
 
-const sans = Outfit({
+const sans = Source_Sans_3({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ["300", "400", "500", "600"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {

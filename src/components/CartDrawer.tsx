@@ -95,7 +95,7 @@ export function CartDrawer() {
               <Link
                 href="/shop/checkout"
                 onClick={() => setOpen(false)}
-                className="mt-4 block rounded-full bg-ink px-5 py-3 text-center text-[12px] tracking-[0.16em] text-cream uppercase"
+                className="mt-4 block btn btn-solid text-center"
               >
                 Checkout
               </Link>
