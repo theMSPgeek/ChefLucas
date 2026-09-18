@@ -10,10 +10,13 @@ import {
 } from "./products";
 
 const GHL_API = "https://services.leadconnectorhq.com";
-const GHL_VERSION = "2021-07-28";
+const GHL_READ_VERSION = "2021-07-28";
+/** Lois / marketplace docs: POST /products/inventory requires Version: v3. */
+const GHL_INVENTORY_WRITE_VERSION = "v3";
 const REVALIDATE_SECONDS = 60;
 const DEFAULT_LOCATION_ID = "zpGOdJ2JYNkKfMpcko5l";
 const DEFAULT_COLLECTION_NAME = "Chef Lucas Demo";
+export const SHOP_CACHE_TAG = "ghl-shop";
 
 /**
  * Private Integration Token env names (never commit values).
@@ -116,14 +119,22 @@ function shopFilter(overrides?: Partial<ShopCatalogue["filter"]>): ShopCatalogue
   };
 }
 
-async function ghlFetch<T>(path: string, search: Record<string, string | string[] | undefined>) {
+type GhlCallOptions = {
+  method?: "GET" | "POST";
+  search?: Record<string, string | string[] | undefined>;
+  body?: unknown;
+  version?: string;
+  cache?: RequestCache;
+};
+
+async function ghlCall<T>(path: string, options: GhlCallOptions = {}) {
   const token = ghlPrivateToken();
   if (!token) {
     throw new Error("HighLevel private integration token is not configured.");
   }
 
   const url = new URL(path.startsWith("http") ? path : `${GHL_API}${path}`);
-  for (const [key, value] of Object.entries(search)) {
+  for (const [key, value] of Object.entries(options.search || {})) {
     if (value === undefined || value === "") continue;
     if (Array.isArray(value)) {
       for (const item of value) url.searchParams.append(key, item);
@@ -132,15 +143,30 @@ async function ghlFetch<T>(path: string, search: Record<string, string | string[
     }
   }
 
-  const res = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${token.value}`,
-      Version: GHL_VERSION,
-    },
-    cache: "force-cache",
-    next: { revalidate: REVALIDATE_SECONDS },
-  });
+  const method = options.method || "GET";
+  const cache = options.cache ?? (method === "GET" ? "force-cache" : "no-store");
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    Authorization: `Bearer ${token.value}`,
+    Version: options.version || GHL_READ_VERSION,
+  };
+  if (options.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const init: RequestInit & { next?: { revalidate?: number; tags?: string[] } } = {
+    method,
+    headers,
+    cache,
+  };
+  if (options.body !== undefined) {
+    init.body = JSON.stringify(options.body);
+  }
+  if (cache === "force-cache" || cache === "default") {
+    init.next = { revalidate: REVALIDATE_SECONDS, tags: [SHOP_CACHE_TAG] };
+  }
+
+  const res = await fetch(url, init);
 
   const text = await res.text();
   let json: T | null = null;
@@ -151,12 +177,24 @@ async function ghlFetch<T>(path: string, search: Record<string, string | string[
   }
 
   if (!res.ok) {
+    const hint =
+      res.status === 401 || res.status === 403
+        ? " Confirm the Private Integration token includes products/prices.write (and the existing readonly product scopes), then redeploy Production."
+        : "";
     throw new Error(
-      `GHL ${url.pathname} failed (${res.status}): ${text.slice(0, 240) || res.statusText}`,
+      `GHL ${method} ${url.pathname} failed (${res.status}): ${text.slice(0, 240) || res.statusText}.${hint}`,
     );
   }
 
   return (json ?? {}) as T;
+}
+
+async function ghlFetch<T>(
+  path: string,
+  search: Record<string, string | string[] | undefined>,
+  cache?: RequestCache,
+) {
+  return ghlCall<T>(path, { search, cache });
 }
 
 function asRecords(value: unknown): Record<string, unknown>[] {
@@ -185,8 +223,8 @@ function stripHtml(value: string) {
     .trim();
 }
 
-async function listCollectionsByName(locationId: string, name: string) {
-  const rows = await fetchCollections(locationId, name);
+async function listCollectionsByName(locationId: string, name: string, cache?: RequestCache) {
+  const rows = await fetchCollections(locationId, name, cache);
   const needle = name.trim().toLowerCase();
   const exact = rows.filter((row) => (row.name || "").trim().toLowerCase() === needle);
   return exact.length
@@ -194,7 +232,7 @@ async function listCollectionsByName(locationId: string, name: string) {
     : rows.filter((row) => (row.name || "").toLowerCase().includes(needle));
 }
 
-async function fetchCollections(locationId: string, name: string) {
+async function fetchCollections(locationId: string, name: string, cache?: RequestCache) {
   const attempts: Array<"LOCATION" | "location"> = ["LOCATION", "location"];
   let lastError: unknown;
   for (const altType of attempts) {
@@ -207,6 +245,7 @@ async function fetchCollections(locationId: string, name: string) {
           name,
           limit: "100",
         },
+        cache,
       );
       return asRecords(payload.data ?? payload.collections) as GhlCollection[];
     } catch (error) {
@@ -216,10 +255,14 @@ async function fetchCollections(locationId: string, name: string) {
   throw lastError instanceof Error ? lastError : new Error("Collection lookup failed.");
 }
 
-async function listProducts(locationId: string, options: {
-  productIds?: string[];
-  collectionIds?: string[];
-}) {
+async function listProducts(
+  locationId: string,
+  options: {
+    productIds?: string[];
+    collectionIds?: string[];
+  },
+  cache?: RequestCache,
+) {
   const products: GhlProduct[] = [];
   let offset = 0;
   const limit = 100;
@@ -234,6 +277,7 @@ async function listProducts(locationId: string, options: {
         productIds: options.productIds,
         collectionIds: options.collectionIds?.join(","),
       },
+      cache,
     );
     const page = asRecords(payload.products) as GhlProduct[];
     products.push(...page);
@@ -244,7 +288,7 @@ async function listProducts(locationId: string, options: {
   return products;
 }
 
-async function listInventory(locationId: string) {
+async function listInventory(locationId: string, cache?: RequestCache) {
   const attempts: Array<"LOCATION" | "location"> = ["LOCATION", "location"];
   for (const altType of attempts) {
     try {
@@ -255,6 +299,7 @@ async function listInventory(locationId: string) {
           altType,
           limit: "100",
         },
+        cache,
       );
       return asRecords(payload.inventory) as GhlInventoryItem[];
     } catch (error) {
@@ -268,10 +313,11 @@ async function listInventory(locationId: string) {
   return [];
 }
 
-async function listPrices(locationId: string, productId: string) {
+async function listPrices(locationId: string, productId: string, cache?: RequestCache) {
   const payload = await ghlFetch<{ prices?: unknown }>(
     `/products/${productId}/price`,
     { locationId, limit: "50" },
+    cache,
   );
   return asRecords(payload.prices) as GhlPrice[];
 }
@@ -333,11 +379,12 @@ function mapProduct(
   };
 }
 
-export async function getShopCatalogue(): Promise<ShopCatalogue> {
+export async function getShopCatalogue(options?: { fresh?: boolean }): Promise<ShopCatalogue> {
   const locationId = ghlLocationId();
   const collectionName = ghlCollectionName();
   const allowlist = parseProductIdAllowlist();
   const token = ghlPrivateToken();
+  const cache: RequestCache | undefined = options?.fresh ? "no-store" : undefined;
 
   if (!token) {
     const reason =
@@ -357,7 +404,7 @@ export async function getShopCatalogue(): Promise<ShopCatalogue> {
     } else {
       // TODO(Alice): replace name lookup with a stable collection ID when Lois confirms it.
       if (!collectionId) {
-        const matches = await listCollectionsByName(locationId, collectionName);
+        const matches = await listCollectionsByName(locationId, collectionName, cache);
         collectionId = idOf(matches[0]);
         if (!collectionId) {
           const reason = `Collection "${collectionName}" not found on location ${locationId}. Waiting for Alice/Lois product IDs (GHL_PRODUCT_IDS) or GHL_PRODUCT_COLLECTION_ID.`;
@@ -370,10 +417,14 @@ export async function getShopCatalogue(): Promise<ShopCatalogue> {
       }
     }
 
-    const rawProducts = await listProducts(locationId, {
-      productIds: productIds.length ? productIds : undefined,
-      collectionIds: productIds.length ? undefined : collectionId ? [collectionId] : undefined,
-    });
+    const rawProducts = await listProducts(
+      locationId,
+      {
+        productIds: productIds.length ? productIds : undefined,
+        collectionIds: productIds.length ? undefined : collectionId ? [collectionId] : undefined,
+      },
+      cache,
+    );
 
     const filtered = productIds.length
       ? rawProducts.filter((product) => productIds.includes(idOf(product)))
@@ -388,12 +439,12 @@ export async function getShopCatalogue(): Promise<ShopCatalogue> {
     }
 
     const [inventory, prices] = await Promise.all([
-      listInventory(locationId),
+      listInventory(locationId, cache),
       Promise.all(
         filtered.map(async (product) => {
           const id = idOf(product);
           try {
-            return await listPrices(locationId, id);
+            return await listPrices(locationId, id, cache);
           } catch (error) {
             console.warn(
               `[shop/ghl] Price list failed for ${id}.`,
@@ -423,4 +474,41 @@ export async function getShopCatalogue(): Promise<ShopCatalogue> {
     console.error("[shop/ghl]", reason);
     return emptyCatalogue("error", reason, shopFilter());
   }
+}
+
+/**
+ * Absolute inventory set (not a delta). Marketplace:
+ * POST /products/inventory · Version: v3 · scope products/prices.write
+ * https://marketplace.gohighlevel.com/docs/ghl/products/update-inventory
+ */
+export async function updateGhlInventory(
+  items: Array<{
+    priceId: string;
+    availableQuantity: number;
+    allowOutOfStockPurchases: boolean;
+  }>,
+) {
+  if (!items.length) {
+    return { status: true, message: "No inventory writes." };
+  }
+
+  const payload = await ghlCall<{ status?: boolean; message?: string }>(
+    "/products/inventory",
+    {
+      method: "POST",
+      version: GHL_INVENTORY_WRITE_VERSION,
+      cache: "no-store",
+      body: {
+        altId: ghlLocationId(),
+        altType: "location",
+        items,
+      },
+    },
+  );
+
+  if (payload.status === false) {
+    throw new Error(payload.message || "HighLevel inventory update was rejected.");
+  }
+
+  return payload;
 }

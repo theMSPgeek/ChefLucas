@@ -108,7 +108,7 @@ export function CartDrawer() {
                 <span>{formatGbp(subtotal)}</span>
               </p>
               <p className="mt-2 text-xs text-muted">
-                Demo checkout only — nothing is charged.
+                Demo order — stock updated in GHL, nothing charged.
               </p>
               <Link
                 href="/shop/checkout"
