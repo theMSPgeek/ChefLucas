@@ -10,6 +10,7 @@ Live photography is pulled from [cheflucas.co.uk](https://cheflucas.co.uk/) and 
 - Tailwind CSS v4
 - Framer Motion
 - Vercel (production)
+- Web Analytics via `@vercel/analytics`; enable in Vercel project → Analytics if needed.
 
 ## Pages
 
