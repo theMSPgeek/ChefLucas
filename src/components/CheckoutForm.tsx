@@ -4,11 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "./CartProvider";
 import { formatGbp } from "@/lib/products";
+import type { InventoryLineResult } from "@/lib/shop-inventory";
 
 export function CheckoutForm() {
   const { detailed, subtotal, clear } = useCart();
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [lines, setLines] = useState<InventoryLineResult[]>([]);
 
   if (detailed.length === 0 && status !== "done") {
     return (
@@ -26,11 +28,24 @@ export function CheckoutForm() {
     return (
       <div className="border border-line px-6 py-10">
         <p className="eyebrow">Demo order received</p>
-        <h2 className="mt-3 font-display text-3xl">No card was charged.</h2>
+        <h2 className="mt-3 font-display text-3xl">Nothing was charged.</h2>
         <p className="mt-4 text-sm leading-7 text-muted">
-          We have the bag as <strong>{message}</strong>. This is a demo shop —
-          nothing is charged, and nothing will be posted until the kitchen is live.
+          {message || "demo order — stock updated in GHL, nothing charged."} We have the bag as{" "}
+          <strong>{lines.length ? lines.map((line) => line.name).join(", ") : "your order"}</strong>
+          .
         </p>
+        {lines.length > 0 && (
+          <ul className="mt-5 space-y-2 text-sm text-muted">
+            {lines.map((line) => (
+              <li key={line.id}>
+                {line.name} × {line.quantity}
+                {line.trackInventory && line.availableQuantity !== null
+                  ? ` — ${line.availableQuantity} left in HighLevel`
+                  : null}
+              </li>
+            ))}
+          </ul>
+        )}
         <Link href="/shop" className="mt-6 inline-block text-sm underline">
           Back to the shop
         </Link>
@@ -65,7 +80,8 @@ export function CheckoutForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Checkout failed");
       clear();
-      setMessage(data.opportunityName);
+      setMessage(typeof data.message === "string" ? data.message : "");
+      setLines(Array.isArray(data.items) ? data.items : []);
       setStatus("done");
     } catch (err) {
       setStatus("error");
@@ -118,7 +134,7 @@ export function CheckoutForm() {
           {status === "sending" ? "Placing demo order…" : "Place demo order"}
         </button>
         <p className="text-xs text-muted">
-          Demo only. This button never takes a card.
+          Demo order — stock updated in GHL, nothing charged.
         </p>
       </form>
       <aside className="card p-6">

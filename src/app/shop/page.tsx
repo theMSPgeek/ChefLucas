@@ -18,7 +18,7 @@ export default async function ShopPage() {
       <PageHero
         eyebrow="Between events"
         title="The sauce club."
-        lede="Bottled house sauces and a little merch from the street-food tents. Demo only. Nothing is charged. Stock is live from HighLevel."
+        lede="Bottled house sauces and a little merch from the street-food tents. Demo only — a checkout updates HighLevel stock, nothing is charged."
         image="/images/shop-trio.png"
       />
       <section className="mx-auto max-w-6xl px-5 py-20">
