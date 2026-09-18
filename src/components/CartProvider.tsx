@@ -4,11 +4,18 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useState,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { getProduct, type Product } from "@/lib/products";
+import {
+  getProduct,
+  rememberProducts,
+  stockStatus,
+  type Product,
+} from "@/lib/products";
 
 export type CartLine = { id: string; quantity: number };
 
@@ -21,6 +28,7 @@ type CartContextValue = {
   remove: (id: string) => void;
   setQuantity: (id: string, quantity: number) => void;
   clear: () => void;
+  hydrateCatalogue: (products: Product[]) => void;
   detailed: { product: Product; quantity: number }[];
   subtotal: number;
 };
@@ -93,6 +101,11 @@ function getOpenServerSnapshot() {
   return false;
 }
 
+function maxQuantity(product: Product) {
+  if (!product.trackInventory || product.qty === null) return Infinity;
+  return Math.max(0, product.qty);
+}
+
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -102,6 +115,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
     getOpenSnapshot,
     getOpenServerSnapshot,
   );
+  const [catalogue, setCatalogue] = useState<Product[]>([]);
+
+  const hydrateCatalogue = useCallback((products: Product[]) => {
+    rememberProducts(products);
+    setCatalogue(products);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/shop/products")
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (Array.isArray(data.products)) hydrateCatalogue(data.products);
+      })
+      .catch(() => {
+        /* catalogue stays empty; shop page hydrates on visit */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrateCatalogue]);
 
   const setOpen = useCallback((value: boolean) => {
     drawerOpen = value;
@@ -109,14 +144,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const add = useCallback((id: string, quantity = 1) => {
+    const product = getProduct(id);
+    if (!product || stockStatus(product) === "sold-out") return;
+    const cap = maxQuantity(product);
     const current = getSnapshot();
     const existing = current.find((line) => line.id === id);
+    const nextQty = Math.min(cap, (existing?.quantity || 0) + quantity);
+    if (nextQty < 1) return;
     persist(
       existing
         ? current.map((line) =>
-            line.id === id ? { ...line, quantity: line.quantity + quantity } : line,
+            line.id === id ? { ...line, quantity: nextQty } : line,
           )
-        : [...current, { id, quantity }],
+        : [...current, { id, quantity: nextQty }],
     );
     drawerOpen = true;
     emit();
@@ -127,11 +167,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setQuantity = useCallback((id: string, quantity: number) => {
+    const product = getProduct(id);
+    const cap = product ? maxQuantity(product) : quantity;
+    const nextQty = Math.min(cap, quantity);
     const current = getSnapshot();
     persist(
-      quantity < 1
+      nextQty < 1
         ? current.filter((line) => line.id !== id)
-        : current.map((line) => (line.id === id ? { ...line, quantity } : line)),
+        : current.map((line) => (line.id === id ? { ...line, quantity: nextQty } : line)),
     );
   }, []);
 
@@ -141,11 +184,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () =>
       lines
         .map((line) => {
-          const product = getProduct(line.id);
+          const product =
+            catalogue.find((item) => item.id === line.id) || getProduct(line.id);
           return product ? { product, quantity: line.quantity } : null;
         })
         .filter((line): line is { product: Product; quantity: number } => Boolean(line)),
-    [lines],
+    [lines, catalogue],
   );
 
   const subtotal = detailed.reduce(
@@ -164,10 +208,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       remove,
       setQuantity,
       clear,
+      hydrateCatalogue,
       detailed,
       subtotal,
     }),
-    [lines, count, open, setOpen, add, remove, setQuantity, clear, detailed, subtotal],
+    [lines, count, open, setOpen, add, remove, setQuantity, clear, hydrateCatalogue, detailed, subtotal],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
