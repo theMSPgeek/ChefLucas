@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-ink: #14110e;
+  --color-charcoal: #1c1814;
+  --color-cream: #f3eee4;
+  --color-parchment: #e7dccb;
+  --color-gold: #c4a574;
+  --color-gold-deep: #9a7b4f;
+  --color-muted: #6f675c;
+  --color-line: rgba(196, 165, 116, 0.28);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --shadow-soft: 0 30px 80px -40px rgba(20, 17, 14, 0.55);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  letter-spacing: -0.011em;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+.font-display {
+  font-family: var(--font-display), "Times New Roman", serif;
+}
+
+.gold-rule {
+  height: 1px;
+  width: 4.5rem;
+  background: linear-gradient(90deg, var(--color-gold), transparent);
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-gold-deep);
+  font-weight: 500;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 80;
+  background: var(--color-ink);
+  color: var(--color-cream);
+  padding: 0.5rem 1rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.field {
+  width: 100%;
+  border: 1px solid var(--color-line);
+  background: transparent;
+  padding: 0.75rem 0.9rem;
+  color: var(--color-ink);
+}
+
+.field::placeholder {
+  color: #9a9286;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
