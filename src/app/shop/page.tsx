@@ -14,7 +14,7 @@ export default function ShopPage() {
         eyebrow="Between events"
         title="The sauce club."
         lede="Bottled house sauces and a little merch from the street-food tents. Demo only. Nothing is charged."
-        image="/images/fries-1.jpg"
+        image="/images/shop-trio.png"
       />
       <section className="mx-auto max-w-6xl px-5 py-20">
         <ShopGrid />

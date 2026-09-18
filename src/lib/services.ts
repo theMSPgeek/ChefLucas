@@ -53,7 +53,7 @@ export const services = [
     slug: "sauce-club",
     title: "Sauce club",
     kicker: "Wildcard",
-    image: "/images/fries-1.jpg",
+    image: "/images/shop-trio.png",
     blurb:
       "Bottled house sauces from the street-food tents — a shop-shaped taste of Chef Lucas between events.",
     details:
