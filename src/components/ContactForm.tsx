@@ -20,7 +20,6 @@ export function ContactForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not send");
       setStatus("done");
-      setMessage(data.opportunityName);
       event.currentTarget.reset();
     } catch (err) {
       setStatus("error");
@@ -34,8 +33,8 @@ export function ContactForm() {
         <p className="eyebrow">Received</p>
         <h2 className="mt-3 font-display text-3xl">A note is on the pass.</h2>
         <p className="mt-3 text-sm text-muted">
-          Filed as <strong>{message}</strong> — in live mode this is a tagged HighLevel
-          contact in New enquiry, not a live booking.
+          We have your note. This is a demo confirmation — not a live booking.
+          A chef still replies in person when the kitchen is live.
         </p>
       </div>
     );

@@ -54,16 +54,18 @@ export function Footer() {
               href={site.instagram}
               rel="noreferrer"
               target="_blank"
+              aria-label="Instagram @cheflucastoborek"
             >
-              Instagram @cheflucastoborek
+              Instagram
             </a>
             <a
               className="hover:text-gold"
               href={site.linkedin}
               rel="noreferrer"
               target="_blank"
+              aria-label="LinkedIn CLSC Ltd"
             >
-              LinkedIn CLSC Ltd
+              LinkedIn
             </a>
           </div>
         </div>

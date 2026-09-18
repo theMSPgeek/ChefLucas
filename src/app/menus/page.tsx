@@ -7,7 +7,7 @@ import { menus } from "@/lib/menus";
 
 export const metadata: Metadata = {
   title: "Menus",
-  description: "Seasonal and event menus structured for a later CMS or HighLevel document.",
+  description: "Seasonal and event menus from Chef Lucas Catering.",
 };
 
 export default function MenusPage() {
@@ -15,8 +15,8 @@ export default function MenusPage() {
     <>
       <PageHero
         eyebrow="On paper"
-        title="Menus that can move into a client portal."
-        lede="Static for now, shaped for HighLevel documents later — tasting notes, guest counts, and dietary variants sitting beside the contract."
+        title="Menus written for the table."
+        lede="Seasonal tasting notes, guest counts, and dietary variants — written down so the kitchen and the table agree."
         image="/images/plates.jpg"
       />
       <section className="mx-auto max-w-6xl space-y-20 px-5 py-24">

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -13,6 +13,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const { count, setOpen: setCartOpen } = useCart();
   const overHero = pathname === "/";
+  const reduceMotion = useReducedMotion();
 
   return (
     <header
@@ -29,7 +30,7 @@ export function Header() {
             alt=""
             width={120}
             height={72}
-            className="h-10 w-auto"
+            className={`h-10 w-auto ${overHero ? "" : "brightness-0"}`}
             priority
           />
           <span className="hidden font-display text-lg tracking-[0.18em] sm:block">
@@ -87,9 +88,10 @@ export function Header() {
       <AnimatePresence>
         {open && (
           <motion.nav
-            initial={{ height: 0, opacity: 0 }}
+            initial={reduceMotion ? false : { height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            exit={reduceMotion ? undefined : { height: 0, opacity: 0 }}
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden border-t border-line bg-cream text-ink lg:hidden"
           >
             <div className="flex flex-col px-5 py-4 text-sm tracking-[0.16em] uppercase">

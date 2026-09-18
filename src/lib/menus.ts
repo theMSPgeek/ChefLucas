@@ -26,7 +26,7 @@ export const menus = [
         items: ["Buttermilk panna cotta, macerated strawberry, wood sorrel"],
       },
     ],
-    note: "5 or 7 courses. Vegetarian and allergen variants written into the HighLevel booking notes.",
+    note: "5 or 7 courses. Vegetarian and allergen variants written into the booking notes.",
   },
   {
     id: "wedding-feast",
@@ -73,7 +73,7 @@ export const menus = [
         items: ["Afternoon tea add-on or dessert cart"],
       },
     ],
-    note: "Quotes turn around quickly. Corporate tags and company name flow into the CRM opportunity.",
+    note: "Quotes turn around quickly. Tell us the company name if we should write to a work inbox.",
   },
   {
     id: "street-feast",
@@ -91,6 +91,6 @@ export const menus = [
         ],
       },
     ],
-    note: "Each station can be a standalone booking type in HighLevel, or combined as Custom.",
+    note: "Each station can be booked on its own, or combined as a custom feast.",
   },
 ];

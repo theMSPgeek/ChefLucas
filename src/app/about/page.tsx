@@ -57,8 +57,10 @@ export default function AboutPage() {
       </section>
       <section className="bg-parchment/40 py-24">
         <div className="mx-auto max-w-6xl px-5">
-          <p className="eyebrow">The brigade</p>
-          <h2 className="mt-3 font-display text-4xl">Chefs with personality.</h2>
+          <Reveal>
+            <p className="eyebrow">The brigade</p>
+            <h2 className="mt-3 font-display text-4xl">Chefs with personality.</h2>
+          </Reveal>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {chefs.map((chef) => (
               <Reveal key={chef.name}>
@@ -73,18 +75,20 @@ export default function AboutPage() {
         </div>
       </section>
       <section className="mx-auto max-w-6xl px-5 py-24">
-        <p className="eyebrow">Six steps, no stress</p>
-        <h2 className="mt-3 font-display text-4xl">How a booking actually happens.</h2>
-        <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {steps.map((step, index) => (
-            <li key={step} className="border border-line p-6">
-              <p className="font-display text-3xl text-gold-deep">
-                {String(index + 1).padStart(2, "0")}
-              </p>
-              <p className="mt-3 text-sm leading-6 text-muted">{step}</p>
-            </li>
-          ))}
-        </ol>
+        <Reveal>
+          <p className="eyebrow">Six steps, no stress</p>
+          <h2 className="mt-3 font-display text-4xl">How a booking actually happens.</h2>
+          <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {steps.map((step, index) => (
+              <li key={step} className="border border-line p-6">
+                <p className="font-display text-3xl text-gold-deep">
+                  {String(index + 1).padStart(2, "0")}
+                </p>
+                <p className="mt-3 text-sm leading-6 text-muted">{step}</p>
+              </li>
+            ))}
+          </ol>
+        </Reveal>
       </section>
       <CtaBand title="Start with that conversation." />
     </>

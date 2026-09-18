@@ -28,9 +28,8 @@ export function CheckoutForm() {
         <p className="eyebrow">Demo order received</p>
         <h2 className="mt-3 font-display text-3xl">No card was charged.</h2>
         <p className="mt-4 text-sm leading-7 text-muted">
-          Filed as <strong>{message}</strong>. When Stripe and GHL products are connected,
-          this path takes a deposit and tags the contact <em>product/sauce-club</em> — the
-          eCommerce chapter from the HighLevel audit, not a live shop.
+          We have the bag as <strong>{message}</strong>. This is a demo shop —
+          nothing is charged, and nothing will be posted until the kitchen is live.
         </p>
         <Link href="/shop" className="mt-6 inline-block text-sm underline">
           Back to the shop
@@ -116,8 +115,7 @@ export function CheckoutForm() {
           {status === "sending" ? "Placing demo order…" : "Place demo order"}
         </button>
         <p className="text-xs text-muted">
-          Stripe publishable key is read from env when present, then ignored. This button
-          never creates a PaymentIntent.
+          Demo only. This button never takes a card.
         </p>
       </form>
       <aside className="card p-6">

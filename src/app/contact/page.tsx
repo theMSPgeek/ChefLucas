@@ -14,7 +14,7 @@ export default function ContactPage() {
       <PageHero
         eyebrow="The pass"
         title="Write, call, or send the kitchen a note."
-        lede="Have a question or ready to book? The form files a tagged HighLevel contact. Until the webhook is live, you will see a demo confirmation."
+        lede="Have a question or ready to book? Send a note and we will come back to you. Until bookings go live, you will see a demo confirmation."
         image="/images/dsc-event.jpg"
       />
       <section className="mx-auto grid max-w-6xl gap-16 px-5 py-20 lg:grid-cols-[0.8fr_1.2fr]">
@@ -33,14 +33,24 @@ export default function ContactPage() {
             </a>
           </address>
           <div className="mt-8 flex flex-col gap-3 text-[12px] tracking-[0.16em] uppercase">
-            <a href={site.instagram} rel="noreferrer" target="_blank">
-              Instagram @cheflucastoborek
+            <a
+              href={site.instagram}
+              rel="noreferrer"
+              target="_blank"
+              aria-label="Instagram @cheflucastoborek"
+            >
+              Instagram
             </a>
-            <a href={site.linkedin} rel="noreferrer" target="_blank">
-              LinkedIn CLSC Ltd
+            <a
+              href={site.linkedin}
+              rel="noreferrer"
+              target="_blank"
+              aria-label="LinkedIn CLSC Ltd"
+            >
+              LinkedIn
             </a>
             <a href={site.trustpilot} rel="noreferrer" target="_blank">
-              Trustpilot
+              Independent reviews
             </a>
           </div>
         </div>

@@ -13,7 +13,7 @@ export default function ShopPage() {
       <PageHero
         eyebrow="Between events"
         title="The sauce club."
-        lede="Bottled house sauces and a little merch — a future HighLevel eCommerce chapter from the audit. Demo only. Nothing is charged."
+        lede="Bottled house sauces and a little merch from the street-food tents. Demo only. Nothing is charged."
         image="/images/fries-1.jpg"
       />
       <section className="mx-auto max-w-6xl px-5 py-20">

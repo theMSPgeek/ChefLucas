@@ -19,33 +19,35 @@ export default function HomePage() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-ink/20" />
         <div className="relative mx-auto flex min-h-[88vh] max-w-6xl flex-col justify-end px-5 pb-20 pt-32">
-          <p className="eyebrow text-gold">Burton-on-Trent · Nationwide</p>
-          <h1 className="mt-5 max-w-3xl font-display text-5xl leading-[0.95] sm:text-7xl lg:text-8xl">
-            Fine dining, brought to your table.
-          </h1>
-          <p className="mt-6 max-w-lg text-base leading-7 text-parchment/85">
-            Chef Lucas Catering — Polish and European kitchens for weddings, boardrooms,
-            buffets and private rooms. Restaurant care. Festival heart.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-4">
-            <Link
-              href="/book"
-              className="btn btn-solid"
-            >
-              Begin an enquiry
-            </Link>
-            <Link
-              href="/menus"
-              className="btn btn-ghost"
-            >
-              Seasonal menus
-            </Link>
-          </div>
+          <Reveal immediate duration={0.65}>
+            <p className="eyebrow text-gold">Burton-on-Trent · Nationwide</p>
+            <h1 className="mt-5 max-w-3xl font-display text-5xl leading-[0.95] sm:text-7xl lg:text-8xl">
+              Fine dining, brought to your table.
+            </h1>
+            <p className="mt-6 max-w-lg text-base leading-7 text-parchment/85">
+              Chef Lucas Catering — Polish and European kitchens for weddings, boardrooms,
+              buffets and private rooms. Restaurant care. Festival heart.
+            </p>
+            <div className="mt-10 flex flex-wrap gap-4">
+              <Link
+                href="/book"
+                className="btn btn-solid"
+              >
+                Begin an enquiry
+              </Link>
+              <Link
+                href="/menus"
+                className="btn btn-ghost"
+              >
+                Seasonal menus
+              </Link>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       <section className="border-y border-line bg-cream">
-        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:grid-cols-4">
+        <Reveal className="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:grid-cols-4" duration={0.5} immediate delay={0.12}>
           {[
             { k: "Trustpilot", v: "Independent reviews", href: site.trustpilot },
             { k: "30+ years", v: "Combined chef experience" },
@@ -70,7 +72,7 @@ export default function HomePage() {
               </p>
             </div>
           ))}
-        </div>
+        </Reveal>
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-24">
