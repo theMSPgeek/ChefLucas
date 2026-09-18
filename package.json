@@ -10,6 +10,7 @@
     "test": "node --experimental-strip-types --test src/lib/shop-inventory.test.ts"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "framer-motion": "^12.23.12",
     "next": "16.3.5",
     "react": "19.2.8",

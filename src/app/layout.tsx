@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Newsreader, Source_Sans_3 } from "next/font/google";
 import { DemoBanner } from "@/components/DemoBanner";
 import { Footer } from "@/components/Footer";
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <Footer />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
