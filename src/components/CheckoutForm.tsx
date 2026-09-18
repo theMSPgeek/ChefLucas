@@ -55,6 +55,9 @@ export function CheckoutForm() {
             quantity,
             price: product.price,
             tag: product.tag,
+            priceId: product.priceId,
+            sku: product.sku,
+            qty: product.qty,
           })),
           subtotal,
         }),
@@ -126,7 +129,7 @@ export function CheckoutForm() {
               <span>
                 {product.name} × {quantity}
               </span>
-              <span>{formatGbp(product.price * quantity)}</span>
+              <span>{formatGbp(product.price * quantity, product.currency)}</span>
             </li>
           ))}
         </ul>

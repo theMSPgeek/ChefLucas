@@ -20,7 +20,7 @@ Live photography is pulled from [cheflucas.co.uk](https://cheflucas.co.uk/) and 
 | `/menus` | Seasonal / event menus structured for a later CMS or GHL document |
 | `/events` | Gallery storytelling |
 | `/book` | Multi-step wizard (wedding, corporate, buffet, private, tasting, custom) |
-| `/shop` | Demo sauce / merch catalogue + bag |
+| `/shop` | Sauce / merch catalogue from HighLevel Products + bag |
 | `/shop/checkout` | Checkout stub — **never charges** |
 | `/about` | Story, brigade, six-step booking |
 | `/contact` | Studio details + GHL-shaped form |
@@ -124,9 +124,39 @@ The live six-step service (chat → details → deposit → two-week check-in �
 1. Connect Stripe inside HighLevel Payments.
 2. Put the publishable key in `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`.
 3. Use GHL documents/contracts for the booking form and the **20% deposit** invoice from the real process.
-4. Map sauce-club SKUs with `GHL_PRODUCT_*` env vars. Checkout already sends those IDs when present.
+4. Shop line items already send the live HighLevel product `_id` as `ghlProductId`. Do not hard-code SKUs.
 
 Do **not** take live card details through this demo.
+
+## Shop stock (HighLevel Products)
+
+`/shop` no longer uses a hard-coded SKU list. Name, price, and quantity come from the HighLevel Products API for the FKIT location. Checkout stays **demo-mode** (nothing is charged).
+
+### How Lois / Lucas update stock
+
+1. In HighLevel: **Payments → Products** (FKIT location).
+2. Edit the product in the **Chef Lucas Demo** collection (or the collection named in `GHL_PRODUCT_COLLECTION`).
+3. Change **Available quantity** on the price / inventory row.
+4. Reload [cheflucas.vercel.app/shop](https://cheflucas.vercel.app/shop). Stock badges refresh within about a minute — **no Next.js deploy**.
+
+Badges: **Sold out** (charcoal outline, stone text) when qty is 0; **Low stock** (soft gold label) when 0 < qty < 10; in-stock is a tiny stone label. Add to bag is hidden when sold out. Product photos come from HighLevel product media URLs — never local `/images/shop-*.png`. Missing media shows a cream placeholder.
+
+If the collection is empty or env is missing, `/shop` shows a quiet empty pantry instead of fake bottles.
+
+### Vercel env vars (Production)
+
+| Name | Required | Notes |
+| --- | --- | --- |
+| `GHL_LOCATION_ID` | yes | FKIT sub-account. Example: `zpGOdJ2JYNkKfMpcko5l` |
+| `GHL_PRIVATE_API_TOKEN` | yes* | Private Integration Token. Scopes: `products.readonly`, `products/collection.readonly`, `products/prices.readonly` |
+| `GHL_PRIVATE_INTEGRATION_TOKEN` | yes* | Alias accepted if `GHL_PRIVATE_API_TOKEN` is unset |
+| `GHL_PRODUCT_COLLECTION` | no | Defaults to `Chef Lucas Demo` |
+| `GHL_PRODUCT_COLLECTION_ID` | no | Optional stable ID once known |
+| `GHL_PRODUCT_IDS` | no | Comma-separated allowlist. **TODO(Alice): ping with product IDs.** Leave empty until then — do not invent IDs |
+
+\*Set **one** of the two token names. Never commit the value.
+
+Server route: `GET /api/shop/products` (cached ~60s).
 
 ## Deploy
 

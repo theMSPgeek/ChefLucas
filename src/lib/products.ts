@@ -1,104 +1,142 @@
+export type StockStatus = "in-stock" | "low-stock" | "sold-out";
+
 export type Product = {
+  /** HighLevel product `_id` — never a local SKU slug. */
   id: string;
+  priceId: string;
   name: string;
   price: number;
+  currency: string;
   blurb: string;
   details: string;
+  /** GHL product media URL only. Empty string → cream placeholder, never local shop stills. */
   image: string;
-  ghlEnv: string;
   tag: string;
+  sku: string;
+  /** Available quantity from GHL inventory. `null` when inventory is not tracked. */
+  qty: number | null;
+  trackInventory: boolean;
+  collectionIds: string[];
 };
 
-export const products: Product[] = [
-  {
-    id: "aegean",
-    name: "Aegean lemon & oregano",
-    price: 9,
-    blurb: "The gyro stall in a bottle. Bright, herbal, generous.",
-    details: "Cold-pressed lemon, wild oregano, garlic, olive oil.",
-    image: "/images/shop-aegean.png",
-    ghlEnv: "GHL_PRODUCT_AEGEAN",
-    tag: "product/aegean-lemon",
-  },
-  {
-    id: "ember",
-    name: "Ember burger glaze",
-    price: 8,
-    blurb: "Sticky, smoky, the chalkboard special at home.",
-    details: "Reduced onion, dark sugar, chipotle, beef dripping note.",
-    image: "/images/shop-ember.png",
-    ghlEnv: "GHL_PRODUCT_EMBER",
-    tag: "product/ember-glaze",
-  },
-  {
-    id: "fiesta",
-    name: "Fiesta Mexicana hot",
-    price: 8,
-    blurb: "Heat with citrus. The sombrero sauce, bottled.",
-    details: "Guajillo, lime, pickled onion liquor.",
-    image: "/images/shop-fiesta.png",
-    ghlEnv: "GHL_PRODUCT_FIESTA",
-    tag: "product/fiesta-hot",
-  },
-  {
-    id: "garden",
-    name: "Garden herb aioli",
-    price: 7,
-    blurb: "For grazing boards, chips, and anything golden.",
-    details: "Egg yolk, chive, tarragon, lemon.",
-    image: "/images/shop-garden.png",
-    ghlEnv: "GHL_PRODUCT_GARDEN",
-    tag: "product/garden-aioli",
-  },
-  {
-    id: "mustard",
-    name: "House hot-dog mustard",
-    price: 6,
-    blurb: "Sharp, floral, built for a loaded bun.",
-    details: "Yellow and brown seed, cider vinegar, honey.",
-    image: "/images/shop-mustard.png",
-    ghlEnv: "GHL_PRODUCT_MUSTARD",
-    tag: "product/house-mustard",
-  },
-  {
-    id: "trio",
-    name: "Sauce club seasonal trio",
-    price: 24,
-    blurb: "Three rotating bottles. The tasting kitchen, posted.",
-    details: "A quarterly set — currently lemon, ember, and fiesta.",
-    image: "/images/shop-trio.png",
-    ghlEnv: "GHL_PRODUCT_TRIO",
-    tag: "product/sauce-trio",
-  },
-  {
-    id: "tote",
-    name: "Chef Lucas canvas tote",
-    price: 18,
-    blurb: "Heavy cream canvas, serif lockup, market-day duty.",
-    details: "Demo merch. Shown as a taste of the lockup, not a live dispatch.",
-    image: "/images/logo-alt.png",
-    ghlEnv: "GHL_PRODUCT_TOTE",
-    tag: "product/tote",
-  },
-  {
-    id: "spice",
-    name: "Tasting kitchen spice tin",
-    price: 16,
-    blurb: "The private-dining rub: rosemary, smoked salt, lemon zest.",
-    details: "Enough for a tomahawk evening at home.",
-    image: "/images/shop-spice.png",
-    ghlEnv: "GHL_PRODUCT_SPICE",
-    tag: "product/spice-tin",
-  },
-];
+export type ShopCatalogueStatus =
+  | "ok"
+  | "unconfigured"
+  | "empty"
+  | "error";
 
-export function getProduct(id: string) {
-  return products.find((p) => p.id === id);
+export type ShopCatalogue = {
+  products: Product[];
+  status: ShopCatalogueStatus;
+  reason: string;
+  generatedAt: string;
+  filter: {
+    locationId: string;
+    collectionName: string;
+    collectionId: string;
+    productIds: string[];
+  };
+};
+
+const remembered = new Map<string, Product>();
+
+export function rememberProducts(products: Product[]) {
+  for (const product of products) remembered.set(product.id, product);
 }
 
-export function formatGbp(value: number) {
+export function getProduct(id: string) {
+  return remembered.get(id);
+}
+
+export function formatGbp(value: number, currency = "GBP") {
   return new Intl.NumberFormat("en-GB", {
     style: "currency",
-    currency: "GBP",
+    currency: currency || "GBP",
   }).format(value);
+}
+
+export function stockStatus(product: Pick<Product, "qty" | "trackInventory">): StockStatus {
+  if (!product.trackInventory || product.qty === null) return "in-stock";
+  if (product.qty === 0) return "sold-out";
+  if (product.qty > 0 && product.qty < 10) return "low-stock";
+  return "in-stock";
+}
+
+export function stockBadgeLabel(status: StockStatus) {
+  if (status === "sold-out") return "Sold out";
+  if (status === "low-stock") return "Low stock";
+  return "In stock";
+}
+
+export function stockBadgeClass(status: StockStatus) {
+  if (status === "sold-out") {
+    return "border border-charcoal/80 bg-warm/90 text-muted";
+  }
+  if (status === "low-stock") {
+    return "text-gold";
+  }
+  return "text-muted";
+}
+
+/** Accept only remote GHL media. Never map to /images/shop-*.png. */
+export function productImageUrl(image?: string | null) {
+  const remote = image?.trim() || "";
+  if (/^https?:\/\//i.test(remote)) return remote;
+  return "";
+}
+
+export function firstHttpUrl(...candidates: unknown[]): string {
+  for (const candidate of candidates) {
+    const url = extractHttpUrl(candidate);
+    if (url) return url;
+  }
+  return "";
+}
+
+function extractHttpUrl(value: unknown): string {
+  if (!value) return "";
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return /^https?:\/\//i.test(trimmed) ? trimmed : "";
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const url = extractHttpUrl(item);
+      if (url) return url;
+    }
+    return "";
+  }
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return (
+      extractHttpUrl(record.url) ||
+      extractHttpUrl(record.image) ||
+      extractHttpUrl(record.src) ||
+      extractHttpUrl(record.path)
+    );
+  }
+  return "";
+}
+
+export function slugTag(name: string) {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 48);
+  return slug ? `product/${slug}` : "product/sauce-club";
+}
+
+export function emptyCatalogue(
+  status: ShopCatalogueStatus,
+  reason: string,
+  filter: ShopCatalogue["filter"],
+): ShopCatalogue {
+  return {
+    products: [],
+    status,
+    reason,
+    generatedAt: new Date().toISOString(),
+    filter,
+  };
 }

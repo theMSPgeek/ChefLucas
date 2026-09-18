@@ -1,10 +1,10 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "./CartProvider";
-import { formatGbp } from "@/lib/products";
+import { ProductImage } from "./ProductImage";
+import { formatGbp, stockBadgeClass, stockBadgeLabel, stockStatus } from "@/lib/products";
 
 export function CartDrawer() {
   const { open, setOpen, detailed, subtotal, setQuantity, remove } = useCart();
@@ -46,18 +46,31 @@ export function CartDrawer() {
                 <p className="text-sm text-muted">Nothing bottled yet.</p>
               ) : (
                 <ul className="space-y-5">
-                  {detailed.map(({ product, quantity }) => (
+                  {detailed.map(({ product, quantity }) => {
+                    const badge = stockBadgeLabel(stockStatus(product));
+                    return (
                     <li key={product.id} className="flex gap-4">
-                      <Image
+                      <ProductImage
                         src={product.image}
-                        alt=""
+                        alt={product.name}
                         width={72}
                         height={72}
-                        className="h-[72px] w-[72px] object-cover"
+                        className="h-[72px] w-[72px] shrink-0 object-cover"
                       />
                       <div className="flex-1">
                         <p className="text-sm">{product.name}</p>
-                        <p className="text-xs text-muted">{formatGbp(product.price)}</p>
+                        <p className="text-xs text-muted">
+                          {formatGbp(product.price, product.currency)}
+                          {badge ? (
+                            <>
+                              {" "}
+                              ·{" "}
+                              <span className={stockBadgeClass(stockStatus(product))}>
+                                {badge}
+                              </span>
+                            </>
+                          ) : null}
+                        </p>
                         <div className="mt-2 flex items-center gap-3 text-sm">
                           <button
                             type="button"
@@ -84,7 +97,8 @@ export function CartDrawer() {
                         </div>
                       </div>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               )}
             </div>
