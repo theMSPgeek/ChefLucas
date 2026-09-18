@@ -1,39 +1,25 @@
 "use client";
 
-import Image from "next/image";
 import { useLayoutEffect } from "react";
 import {
   formatGbp,
+  stockBadgeClass,
   stockBadgeLabel,
   stockStatus,
-  type Product,
   type ShopCatalogue,
+  type StockStatus,
 } from "@/lib/products";
 import { useCart } from "./CartProvider";
+import { ProductImage } from "./ProductImage";
 import { Reveal } from "./Reveal";
 
-function ProductPhoto({ product }: { product: Product }) {
-  const remote = product.image.startsWith("http");
-  if (remote) {
-    return (
-      // GHL-hosted stills — hostnames vary; skip the optimizer.
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={product.image}
-        alt={product.name}
-        className="h-full w-full object-cover"
-      />
-    );
-  }
-
+function StockBadge({ status }: { status: StockStatus }) {
   return (
-    <Image
-      src={product.image}
-      alt={product.name}
-      fill
-      className="object-cover"
-      sizes="(min-width: 1024px) 30vw, 90vw"
-    />
+    <span
+      className={`absolute left-3 top-3 px-2 py-1 text-[10px] tracking-[0.16em] uppercase ${stockBadgeClass(status)}`}
+    >
+      {stockBadgeLabel(status)}
+    </span>
   );
 }
 
@@ -61,7 +47,6 @@ export function ShopGrid({ catalogue }: { catalogue: ShopCatalogue }) {
     <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
       {catalogue.products.map((product, index) => {
         const status = stockStatus(product);
-        const badge = stockBadgeLabel(status);
         const soldOut = status === "sold-out";
 
         return (
@@ -70,13 +55,15 @@ export function ShopGrid({ catalogue }: { catalogue: ShopCatalogue }) {
             delay={index * 0.04}
             className="card flex flex-col overflow-hidden"
           >
-            <div className="relative aspect-[4/5] overflow-hidden bg-ink">
-              <ProductPhoto product={product} />
-              {badge ? (
-                <span className="absolute left-3 top-3 border border-line bg-warm/95 px-2 py-1 text-[10px] tracking-[0.16em] uppercase text-charcoal">
-                  {badge}
-                </span>
-              ) : null}
+            <div className={`relative aspect-[4/5] overflow-hidden bg-warm ${soldOut ? "opacity-70" : ""}`}>
+              <ProductImage
+                src={product.image}
+                alt={product.name}
+                fill
+                className="object-cover"
+                sizes="(min-width: 1024px) 30vw, 90vw"
+              />
+              <StockBadge status={status} />
             </div>
             <div className="flex flex-1 flex-col p-5">
               <p className="eyebrow">{formatGbp(product.price, product.currency)}</p>

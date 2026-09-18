@@ -9,6 +9,7 @@ export type Product = {
   currency: string;
   blurb: string;
   details: string;
+  /** GHL product media URL only. Empty string → cream placeholder, never local shop stills. */
   image: string;
   tag: string;
   sku: string;
@@ -37,17 +38,6 @@ export type ShopCatalogue = {
   };
 };
 
-const stillFallbacks: { test: RegExp; image: string }[] = [
-  { test: /aegean|lemon|oregano/i, image: "/images/shop-aegean.png" },
-  { test: /ember|glaze|burger/i, image: "/images/shop-ember.png" },
-  { test: /fiesta|mexicana/i, image: "/images/shop-fiesta.png" },
-  { test: /garden|aioli|herb/i, image: "/images/shop-garden.png" },
-  { test: /mustard|hot[- ]?dog/i, image: "/images/shop-mustard.png" },
-  { test: /trio|seasonal/i, image: "/images/shop-trio.png" },
-  { test: /spice|tin|rub/i, image: "/images/shop-spice.png" },
-  { test: /tote|canvas|bag/i, image: "/images/logo-alt.png" },
-];
-
 const remembered = new Map<string, Product>();
 
 export function rememberProducts(products: Product[]) {
@@ -75,15 +65,57 @@ export function stockStatus(product: Pick<Product, "qty" | "trackInventory">): S
 export function stockBadgeLabel(status: StockStatus) {
   if (status === "sold-out") return "Sold out";
   if (status === "low-stock") return "Low stock";
-  return null;
+  return "In stock";
 }
 
-export function fallbackStill(name: string, image?: string | null) {
-  const remote = image?.trim();
-  if (remote && /^https?:\/\//i.test(remote)) return remote;
-  if (remote && remote.startsWith("/")) return remote;
-  const match = stillFallbacks.find((entry) => entry.test.test(name));
-  return match?.image || "/images/shop-trio.png";
+export function stockBadgeClass(status: StockStatus) {
+  if (status === "sold-out") {
+    return "border border-charcoal/80 bg-warm/90 text-muted";
+  }
+  if (status === "low-stock") {
+    return "text-gold";
+  }
+  return "text-muted";
+}
+
+/** Accept only remote GHL media. Never map to /images/shop-*.png. */
+export function productImageUrl(image?: string | null) {
+  const remote = image?.trim() || "";
+  if (/^https?:\/\//i.test(remote)) return remote;
+  return "";
+}
+
+export function firstHttpUrl(...candidates: unknown[]): string {
+  for (const candidate of candidates) {
+    const url = extractHttpUrl(candidate);
+    if (url) return url;
+  }
+  return "";
+}
+
+function extractHttpUrl(value: unknown): string {
+  if (!value) return "";
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return /^https?:\/\//i.test(trimmed) ? trimmed : "";
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const url = extractHttpUrl(item);
+      if (url) return url;
+    }
+    return "";
+  }
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return (
+      extractHttpUrl(record.url) ||
+      extractHttpUrl(record.image) ||
+      extractHttpUrl(record.src) ||
+      extractHttpUrl(record.path)
+    );
+  }
+  return "";
 }
 
 export function slugTag(name: string) {

@@ -2,7 +2,8 @@ import "server-only";
 
 import {
   emptyCatalogue,
-  fallbackStill,
+  firstHttpUrl,
+  productImageUrl,
   slugTag,
   type Product,
   type ShopCatalogue,
@@ -40,7 +41,7 @@ type GhlProduct = {
   slug?: string;
   collectionIds?: string[];
   availableInStore?: boolean;
-  medias?: { url?: string }[];
+  medias?: unknown;
 };
 
 type GhlPrice = {
@@ -311,11 +312,9 @@ function mapProduct(
   }
 
   const description = stripHtml(product.description || "");
-  const image =
-    product.image ||
-    product.medias?.find((media) => media.url)?.url ||
-    matchingRow?.image ||
-    "";
+  const image = productImageUrl(
+    firstHttpUrl(product.image, product.medias, matchingRow?.image),
+  );
 
   return {
     id,
@@ -325,7 +324,7 @@ function mapProduct(
     currency: (price?.currency || "GBP").toUpperCase(),
     blurb: description.slice(0, 180) || "From the Chef Lucas pantry.",
     details: description || "Listed from HighLevel Products.",
-    image: fallbackStill(product.name, image),
+    image,
     tag: slugTag(product.slug || product.name),
     sku: matchingRow?.sku || price?.sku || "",
     qty,

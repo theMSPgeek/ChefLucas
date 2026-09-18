@@ -139,7 +139,7 @@ Do **not** take live card details through this demo.
 3. Change **Available quantity** on the price / inventory row.
 4. Reload [cheflucas.vercel.app/shop](https://cheflucas.vercel.app/shop). Stock badges refresh within about a minute — **no Next.js deploy**.
 
-Badges: **Sold out** when qty is 0; **Low stock** when 0 < qty < 10. Add to bag is hidden when sold out.
+Badges: **Sold out** (charcoal outline, stone text) when qty is 0; **Low stock** (soft gold label) when 0 < qty < 10; in-stock is a tiny stone label. Add to bag is hidden when sold out. Product photos come from HighLevel product media URLs — never local `/images/shop-*.png`. Missing media shows a cream placeholder.
 
 If the collection is empty or env is missing, `/shop` shows a quiet empty pantry instead of fake bottles.
 
