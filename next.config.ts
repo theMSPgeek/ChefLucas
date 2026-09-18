@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "firebasestorage.googleapis.com", pathname: "/**" },
       { protocol: "https", hostname: "**.googleusercontent.com", pathname: "/**" },
       { protocol: "https", hostname: "cdn.filestackcontent.com", pathname: "/**" },
+      { protocol: "https", hostname: "assets.cdn.filesafe.space", pathname: "/**" },
+      { protocol: "https", hostname: "**.filesafe.space", pathname: "/**" },
     ],
   },
 };
