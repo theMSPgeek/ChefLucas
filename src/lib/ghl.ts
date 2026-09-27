@@ -132,8 +132,8 @@ export async function postToGhl(payload: GhlLeadPayload) {
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`GHL webhook failed (${res.status}): ${text.slice(0, 200)}`);
+    console.error(`[ghl/webhook] forward failed (${res.status})`);
+    throw new Error("Enquiry could not be forwarded.");
   }
 
   return { ok: true, demo: isDemoMode(), forwarded: true };

@@ -33,9 +33,17 @@ export type InventoryPlan =
   | { ok: true; writes: InventoryWriteItem[]; lines: InventoryLineResult[] }
   | { ok: false; status: 400 | 409; error: string };
 
+export const MAX_LINE_QUANTITY = 24;
+export const MAX_CHECKOUT_LINES = 12;
+
 function asQuantity(value: unknown) {
-  const quantity = Math.floor(Number(value));
-  return Number.isFinite(quantity) ? quantity : NaN;
+  if (typeof value === "number") {
+    return Number.isInteger(value) ? value : NaN;
+  }
+  if (typeof value === "string" && /^[0-9]+$/.test(value.trim())) {
+    return Number(value.trim());
+  }
+  return NaN;
 }
 
 /**
@@ -55,14 +63,26 @@ export function planInventoryDecrements(
     if (!id) {
       return { ok: false, status: 400, error: "Each line item needs a product id." };
     }
-    if (!Number.isFinite(quantity) || quantity < 1) {
+    if (!Number.isFinite(quantity) || quantity < 1 || quantity > MAX_LINE_QUANTITY) {
       return {
         ok: false,
         status: 400,
-        error: "Each line item needs a quantity of at least 1.",
+        error: `Quantity must be a whole number from 1 to ${MAX_LINE_QUANTITY}.`,
       };
     }
-    aggregated.set(id, (aggregated.get(id) || 0) + quantity);
+    const next = (aggregated.get(id) || 0) + quantity;
+    if (next > MAX_LINE_QUANTITY) {
+      return {
+        ok: false,
+        status: 400,
+        error: `Quantity must be a whole number from 1 to ${MAX_LINE_QUANTITY}.`,
+      };
+    }
+    aggregated.set(id, next);
+  }
+
+  if (aggregated.size > MAX_CHECKOUT_LINES) {
+    return { ok: false, status: 400, error: "Too many different products in this bag." };
   }
 
   if (!aggregated.size) {

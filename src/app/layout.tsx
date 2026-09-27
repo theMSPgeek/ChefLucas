@@ -5,6 +5,7 @@ import { DemoBanner } from "@/components/DemoBanner";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Providers } from "@/components/Providers";
+import { inventoryWritesEnabled } from "@/lib/shop-auth";
 import { site } from "@/lib/site";
 import "./globals.css";
 
@@ -58,7 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <Providers>
+        <Providers writesEnabled={inventoryWritesEnabled()}>
           <DemoBanner />
           <Header />
           <main id="main" className="flex-1">

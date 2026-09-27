@@ -6,11 +6,15 @@ import { useCart } from "./CartProvider";
 import { formatGbp } from "@/lib/products";
 import type { InventoryLineResult } from "@/lib/shop-inventory";
 
-export function CheckoutForm() {
+const DEMO_FALLBACK =
+  "Demo only — nothing was charged and this is not a live order. Stock was checked and left unchanged.";
+
+export function CheckoutForm({ writesEnabled }: { writesEnabled: boolean }) {
   const { detailed, subtotal, clear } = useCart();
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
   const [lines, setLines] = useState<InventoryLineResult[]>([]);
+  const [inventoryUpdated, setInventoryUpdated] = useState(false);
 
   if (detailed.length === 0 && status !== "done") {
     return (
@@ -30,7 +34,7 @@ export function CheckoutForm() {
         <p className="eyebrow">Demo order received</p>
         <h2 className="mt-3 font-display text-3xl">Nothing was charged.</h2>
         <p className="mt-4 text-sm leading-7 text-muted">
-          {message || "demo order — stock updated in GHL, nothing charged."} We have the bag as{" "}
+          {message || DEMO_FALLBACK} We have the bag as{" "}
           <strong>{lines.length ? lines.map((line) => line.name).join(", ") : "your order"}</strong>
           .
         </p>
@@ -39,9 +43,11 @@ export function CheckoutForm() {
             {lines.map((line) => (
               <li key={line.id}>
                 {line.name} × {line.quantity}
-                {line.trackInventory && line.availableQuantity !== null
+                {line.trackInventory && inventoryUpdated && line.availableQuantity !== null
                   ? ` — ${line.availableQuantity} left in HighLevel`
-                  : null}
+                  : line.trackInventory && line.previousQty !== null
+                    ? ` — ${line.previousQty} in stock, unchanged`
+                    : null}
               </li>
             ))}
           </ul>
@@ -81,6 +87,7 @@ export function CheckoutForm() {
       if (!res.ok) throw new Error(data.error || "Checkout failed");
       clear();
       setMessage(typeof data.message === "string" ? data.message : "");
+      setInventoryUpdated(data.inventoryUpdated === true);
       setLines(Array.isArray(data.items) ? data.items : []);
       setStatus("done");
     } catch (err) {
@@ -134,7 +141,9 @@ export function CheckoutForm() {
           {status === "sending" ? "Placing demo order…" : "Place demo order"}
         </button>
         <p className="text-xs text-muted">
-          Demo order — stock updated in GHL, nothing charged.
+          {writesEnabled
+            ? "Nothing is charged. This is not a live order unless you are signed in as an operator and inventory writes are enabled."
+            : "Demo only — nothing is charged and this is not a live order. Stock is checked and left unchanged."}
         </p>
       </form>
       <aside className="card p-6">

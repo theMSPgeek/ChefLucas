@@ -22,7 +22,7 @@ Live photography is pulled from [cheflucas.co.uk](https://cheflucas.co.uk/) and 
 | `/events` | Gallery storytelling |
 | `/book` | Multi-step wizard (wedding, corporate, buffet, private, tasting, custom) |
 | `/shop` | Sauce / merch catalogue from HighLevel Products + bag |
-| `/shop/checkout` | Demo checkout — **never charges**; decrements GHL stock |
+| `/shop/checkout` | Demo checkout — **never charges**; does not change stock unless an operator write is explicitly enabled |
 | `/about` | Story, brigade, six-step booking |
 | `/contact` | Studio details + GHL-shaped form |
 
@@ -43,7 +43,9 @@ The gold/black **Demo site — not live bookings** banner stays on until:
 1. `NEXT_PUBLIC_DEMO_MODE=false`, and
 2. `GHL_WEBHOOK_URL` or `NEXT_PUBLIC_GHL_FORM_URL` is set.
 
-Booking, contact, and shop checkout always show a success state. If a webhook is configured they also POST JSON to HighLevel. Stripe keys are read and then ignored — no PaymentIntents are created. Shop checkout additionally writes an **absolute** HighLevel inventory quantity (current − cart qty) for each demo line’s `priceId`.
+Booking and contact show a success state. If `GHL_WEBHOOK_URL` (or the legacy `NEXT_PUBLIC_GHL_FORM_URL`) is set, those two public enquiry forms POST JSON to HighLevel after validation, same-origin, and rate-limit checks. Stripe keys are read and then ignored — no PaymentIntents are created.
+
+Shop checkout is different. With no extra configuration it is pure demo mode: it may **read** HighLevel stock, then returns a confirmation and performs **no** external write (no inventory update, no shop webhook). Real inventory writes require both `GHL_INVENTORY_WRITES_ENABLED=true` and a server-side operator secret. See [Shop stock](#shop-stock-highlevel-products).
 
 ## HighLevel wire-up (managed story)
 
@@ -149,24 +151,34 @@ If the collection is empty or env is missing, `/shop` shows a quiet empty pantry
 | Name | Required | Notes |
 | --- | --- | --- |
 | `GHL_LOCATION_ID` | yes | FKIT sub-account. Example: `zpGOdJ2JYNkKfMpcko5l` |
-| `GHL_PRIVATE_API_TOKEN` | yes* | Private Integration Token. Scopes: `products.readonly`, `products/collection.readonly`, `products/prices.readonly`, **`products/prices.write`** |
+| `GHL_PRIVATE_API_TOKEN` | yes* | Private Integration Token. Scopes: `products.readonly`, `products/collection.readonly`, `products/prices.readonly`. Add **`products/prices.write`** only if an operator will update stock |
 | `GHL_PRIVATE_INTEGRATION_TOKEN` | yes* | Alias accepted if `GHL_PRIVATE_API_TOKEN` is unset |
+| `GHL_INVENTORY_WRITES_ENABLED` | no | Default **off**. Must be exactly `true` before any inventory write is attempted |
+| `SHOP_OPERATOR_SECRET` | no | Server-only operator secret. No default. Never `NEXT_PUBLIC_` |
 | `GHL_PRODUCT_COLLECTION` | no | Defaults to `Chef Lucas Demo` |
 | `GHL_PRODUCT_COLLECTION_ID` | no | Optional stable ID once known |
 | `GHL_PRODUCT_IDS` | no | Comma-separated allowlist. **TODO(Alice): ping with product IDs.** Leave empty until then — do not invent IDs |
 
 \*Set **one** of the two token names. Never commit the value.
 
-Server route: `GET /api/shop/products` (cached ~60s). Successful demo checkout calls `revalidateTag('ghl-shop')` + `revalidatePath('/shop')` so badges can refresh immediately.
+Server route: `GET /api/shop/products` (cached ~60s, read only). An operator checkout that actually writes calls `revalidateTag('ghl-shop')` + `revalidatePath('/shop')` so badges can refresh. A public demo checkout does not.
 
-### Demo checkout decrements GHL stock (no Stripe)
+### Demo checkout does not write stock
 
-`POST /api/shop/checkout` does **not** create a PaymentIntent. On success it:
+`POST /api/shop/checkout` does **not** create a PaymentIntent. By default it:
 
-1. Reads live qty from HighLevel (uncached) for products already in the Chef Lucas Demo allowlist / collection.
-2. Rejects sold-out (`qty === 0`) or insufficient qty with **409**.
-3. `POST https://services.leadconnectorhq.com/products/inventory` with **Version: v3**. `availableQuantity` is an **absolute set**, not a delta: `floor(max(0, current − cartQty))`, keyed by **`priceId`** (never productId).
-4. Returns the updated lines. Copy on the site: “demo order — stock updated in GHL, nothing charged.”
+1. Rejects cross-origin requests, non-JSON bodies, and invalid quantities before calling HighLevel.
+2. Reads live qty from HighLevel (uncached) for products already in the Chef Lucas Demo collection / `GHL_PRODUCT_IDS` allowlist.
+3. Rejects sold-out (`qty === 0`) or insufficient qty with **409**.
+4. Returns a demo confirmation. **Nothing is written** — not inventory, and not the shop webhook.
+5. Copy on the site says this is a demo, nothing is charged, and it is not a live order.
+
+A HighLevel inventory write happens only when **both** are true:
+
+- `GHL_INVENTORY_WRITES_ENABLED` is exactly `true` (anything else, including unset, stays off).
+- The caller is an FKIT operator: `Authorization: Bearer <SHOP_OPERATOR_SECRET>`, or the httpOnly `fkit_operator` cookie from `POST /api/shop/operator/session` (sign in at `/shop/operator`). The secret is compared in constant time. There is no default secret and it must not be a `NEXT_PUBLIC_` variable.
+
+On that path the write is still the absolute set Lois confirmed: `POST https://services.leadconnectorhq.com/products/inventory` with **Version: v3**. `availableQuantity` is `floor(max(0, current − cartQty))`, keyed by the catalogue **`priceId`** (client-supplied price ids are ignored). The shop webhook is forwarded only on this same authorized path.
 
 Body (Lois / marketplace confirmed):
 
@@ -182,26 +194,48 @@ Body (Lois / marketplace confirmed):
 
 Docs: [Update Inventory](https://marketplace.gohighlevel.com/docs/ghl/products/update-inventory). Scope: **`products/prices.write`** plus the existing readonly product scopes.
 
-**Ben — token scope (required if the Private Integration was created readonly-only):**
+Public `/book` and `/contact` still forward enquiries when a webhook URL is set. They require same-origin JSON, field validation, and a per-IP rate limit. They do not write inventory. Stripe remains unused.
+
+**Ben — token scope (only if an operator write will be turned on):**
 
 1. HighLevel → Settings → Private Integrations (FKIT location `zpGOdJ2JYNkKfMpcko5l`).
 2. Edit the token used as `GHL_PRIVATE_API_TOKEN` and enable **`products/prices.write`**.
-3. If the token value itself rotated, paste the new value into Vercel → Project → Settings → Environment Variables (Production).
-4. **Redeploy / restart Production** so the running deployment picks up the write scope (or the new token).
+3. Set `SHOP_OPERATOR_SECRET` and `GHL_INVENTORY_WRITES_ENABLED=true` in the server environment. Do not put the secret in a `NEXT_PUBLIC_` variable.
+4. Redeploy only when you intend writes to go live. Until the flag is exactly `true`, checkout cannot change stock.
 
-Do **not** change `/book` or `/contact`. Stripe remains unused.
+### How to test
 
-### How Ben tests (Production)
+Automated (no network, no HighLevel writes):
 
-1. Open [cheflucas.vercel.app/shop](https://cheflucas.vercel.app/shop). Note **Ember burger glaze** quantity / Iris badge.
-2. Add Ember to the bag, go to `/shop/checkout`, place a demo order (any contact details). No card field — nothing is charged.
-3. Success copy should say stock was updated in GHL and nothing was charged.
-4. In HighLevel → Payments → Products, Ember’s available quantity should have dropped by the bag qty.
-5. Reload `/shop` (or wait ≤60s). Ember’s badge / remaining qty should match GHL. Sold-out products stay unbuyable.
+```bash
+npm test
+```
 
-House mustard (qty 0) should stay **Sold out**; a checkout that includes it is rejected server-side (409) and must not decrement anything.
+`src/lib/security.test.ts` covers unauthenticated checkout (no write), cross-origin rejection, bad payloads, and the authorized + `GHL_INVENTORY_WRITES_ENABLED=true` path. `commitGhlInventory` itself refuses to call HighLevel unless that same gate passes, and it does not return upstream bodies or the token.
 
-If checkout returns 401/403 from HighLevel, the token is still missing `products/prices.write` — follow the Ben steps above.
+Manual, against a local server (`npm run dev`):
+
+```bash
+# Unauthenticated — demo confirmation, no inventory write
+curl -sS -D - http://localhost:3000/api/shop/checkout \
+  -H 'content-type: application/json' \
+  -H 'origin: http://localhost:3000' \
+  --data '{"contact":{"firstName":"Ada","lastName":"Hartley","email":"ada@example.com","phone":"07700900123"},"items":[{"id":"ember-id","quantity":1}]}'
+
+# Cross-origin — 403, no write
+curl -sS -D - http://localhost:3000/api/shop/checkout \
+  -H 'content-type: application/json' \
+  -H 'origin: https://evil.example' \
+  --data '{"contact":{"firstName":"Ada","lastName":"Hartley","email":"ada@example.com","phone":"07700900123"},"items":[{"id":"ember-id","quantity":1}]}'
+
+# Bad quantity — 400, no write
+curl -sS -D - http://localhost:3000/api/shop/checkout \
+  -H 'content-type: application/json' \
+  -H 'origin: http://localhost:3000' \
+  --data '{"contact":{"firstName":"Ada","lastName":"Hartley","email":"ada@example.com","phone":"07700900123"},"items":[{"id":"ember-id","quantity":2.5}]}'
+```
+
+An authorized write also needs the flag on and `Authorization: Bearer <SHOP_OPERATOR_SECRET>` (or a session from `/shop/operator`). House mustard (qty 0) stays **Sold out**; a checkout that includes it is rejected (409) and must not decrement anything. Success copy for a public checkout says nothing was charged and this is not a live order. HighLevel error pages and the private token are not returned to the browser.
 
 ## Deploy
 
