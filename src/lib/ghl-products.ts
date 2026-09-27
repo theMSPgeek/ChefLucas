@@ -1,5 +1,6 @@
 import "server-only";
 
+import { commitGhlInventory, type GhlInventoryWrite } from "./ghl-inventory-write";
 import {
   emptyCatalogue,
   firstHttpUrl,
@@ -11,8 +12,6 @@ import {
 
 const GHL_API = "https://services.leadconnectorhq.com";
 const GHL_READ_VERSION = "2021-07-28";
-/** Lois / marketplace docs: POST /products/inventory requires Version: v3. */
-const GHL_INVENTORY_WRITE_VERSION = "v3";
 const REVALIDATE_SECONDS = 60;
 const DEFAULT_LOCATION_ID = "zpGOdJ2JYNkKfMpcko5l";
 const DEFAULT_COLLECTION_NAME = "Chef Lucas Demo";
@@ -177,13 +176,8 @@ async function ghlCall<T>(path: string, options: GhlCallOptions = {}) {
   }
 
   if (!res.ok) {
-    const hint =
-      res.status === 401 || res.status === 403
-        ? " Confirm the Private Integration token includes products/prices.write (and the existing readonly product scopes), then redeploy Production."
-        : "";
-    throw new Error(
-      `GHL ${method} ${url.pathname} failed (${res.status}): ${text.slice(0, 240) || res.statusText}.${hint}`,
-    );
+    console.error(`[shop/ghl] ${method} ${url.pathname} failed (${res.status})`);
+    throw new Error("HighLevel request failed");
   }
 
   return (json ?? {}) as T;
@@ -302,11 +296,8 @@ async function listInventory(locationId: string, cache?: RequestCache) {
         cache,
       );
       return asRecords(payload.inventory) as GhlInventoryItem[];
-    } catch (error) {
-      console.warn(
-        `[shop/ghl] Inventory list failed (altType=${altType});`,
-        error instanceof Error ? error.message : error,
-      );
+    } catch {
+      console.warn("[shop/ghl] inventory list failed");
     }
   }
   console.warn("[shop/ghl] Inventory list failed; falling back to price.availableQuantity.");
@@ -387,10 +378,8 @@ export async function getShopCatalogue(options?: { fresh?: boolean }): Promise<S
   const cache: RequestCache | undefined = options?.fresh ? "no-store" : undefined;
 
   if (!token) {
-    const reason =
-      "HighLevel token missing. Set GHL_PRIVATE_API_TOKEN (or GHL_PRIVATE_INTEGRATION_TOKEN) on Vercel.";
-    console.warn(`[shop/ghl] ${reason}`);
-    return emptyCatalogue("unconfigured", reason, shopFilter());
+    console.warn("[shop/ghl] catalogue unconfigured");
+    return emptyCatalogue("unconfigured", "Shop catalogue is not configured.", shopFilter());
   }
 
   try {
@@ -407,9 +396,8 @@ export async function getShopCatalogue(options?: { fresh?: boolean }): Promise<S
         const matches = await listCollectionsByName(locationId, collectionName, cache);
         collectionId = idOf(matches[0]);
         if (!collectionId) {
-          const reason = `Collection "${collectionName}" not found on location ${locationId}. Waiting for Alice/Lois product IDs (GHL_PRODUCT_IDS) or GHL_PRODUCT_COLLECTION_ID.`;
-          console.warn(`[shop/ghl] ${reason}`);
-          return emptyCatalogue("empty", reason, shopFilter());
+          console.warn("[shop/ghl] collection was not found");
+          return emptyCatalogue("empty", "Shop catalogue is empty.", shopFilter());
         }
         console.info(
           `[shop/ghl] Resolved collection "${collectionName}" → ${collectionId}.`,
@@ -431,11 +419,8 @@ export async function getShopCatalogue(options?: { fresh?: boolean }): Promise<S
       : rawProducts;
 
     if (!filtered.length) {
-      const reason = productIds.length
-        ? "GHL_PRODUCT_IDS set but none of those products were returned by HighLevel."
-        : `No products in collection "${collectionName}" (${collectionId || "unresolved"}).`;
-      console.warn(`[shop/ghl] ${reason}`);
-      return emptyCatalogue("empty", reason, shopFilter({ collectionId, productIds }));
+      console.warn("[shop/ghl] catalogue returned no products");
+      return emptyCatalogue("empty", "Shop catalogue is empty.", shopFilter({ collectionId, productIds }));
     }
 
     const [inventory, prices] = await Promise.all([
@@ -445,11 +430,8 @@ export async function getShopCatalogue(options?: { fresh?: boolean }): Promise<S
           const id = idOf(product);
           try {
             return await listPrices(locationId, id, cache);
-          } catch (error) {
-            console.warn(
-              `[shop/ghl] Price list failed for ${id}.`,
-              error instanceof Error ? error.message : error,
-            );
+          } catch {
+            console.warn("[shop/ghl] price list failed");
             return [] as GhlPrice[];
           }
         }),
@@ -469,10 +451,9 @@ export async function getShopCatalogue(options?: { fresh?: boolean }): Promise<S
       generatedAt: new Date().toISOString(),
       filter: shopFilter({ collectionId, productIds }),
     };
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : "HighLevel Products request failed.";
-    console.error("[shop/ghl]", reason);
-    return emptyCatalogue("error", reason, shopFilter());
+  } catch {
+    console.error("[shop/ghl] catalogue request failed");
+    return emptyCatalogue("error", "Shop catalogue is temporarily unavailable.", shopFilter());
   }
 }
 
@@ -481,34 +462,6 @@ export async function getShopCatalogue(options?: { fresh?: boolean }): Promise<S
  * POST /products/inventory · Version: v3 · scope products/prices.write
  * https://marketplace.gohighlevel.com/docs/ghl/products/update-inventory
  */
-export async function updateGhlInventory(
-  items: Array<{
-    priceId: string;
-    availableQuantity: number;
-    allowOutOfStockPurchases: boolean;
-  }>,
-) {
-  if (!items.length) {
-    return { status: true, message: "No inventory writes." };
-  }
-
-  const payload = await ghlCall<{ status?: boolean; message?: string }>(
-    "/products/inventory",
-    {
-      method: "POST",
-      version: GHL_INVENTORY_WRITE_VERSION,
-      cache: "no-store",
-      body: {
-        altId: ghlLocationId(),
-        altType: "location",
-        items,
-      },
-    },
-  );
-
-  if (payload.status === false) {
-    throw new Error(payload.message || "HighLevel inventory update was rejected.");
-  }
-
-  return payload;
+export async function updateGhlInventory(items: GhlInventoryWrite[], authorized = false) {
+  return commitGhlInventory(items, authorized);
 }

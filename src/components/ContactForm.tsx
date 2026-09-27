@@ -8,9 +8,9 @@ export function ContactForm() {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setStatus("sending");
-    const form = new FormData(event.currentTarget);
-    const payload = Object.fromEntries(form.entries());
+    const payload = Object.fromEntries(new FormData(form).entries());
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -19,8 +19,8 @@ export function ContactForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not send");
+      form.reset();
       setStatus("done");
-      event.currentTarget.reset();
     } catch (err) {
       setStatus("error");
       setMessage(err instanceof Error ? err.message : "Something went wrong");

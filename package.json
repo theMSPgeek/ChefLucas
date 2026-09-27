@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test src/lib/shop-inventory.test.ts"
+    "test": "node --experimental-strip-types --import ./scripts/register-ts-resolver.mjs --test --test-concurrency=1 src/lib/*.test.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
