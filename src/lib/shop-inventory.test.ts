@@ -68,6 +68,18 @@ test("ignores products outside the demo catalogue", () => {
   assert.equal(plan.status, 400);
 });
 
+test("rejects fractional and oversized quantities before any write", () => {
+  const fraction = planInventoryDecrements([ember], [{ id: ember.id, quantity: 2.5 }]);
+  assert.equal(fraction.ok, false);
+  if (fraction.ok) return;
+  assert.equal(fraction.status, 400);
+
+  const huge = planInventoryDecrements([ember], [{ id: ember.id, quantity: 25 }]);
+  assert.equal(huge.ok, false);
+  if (huge.ok) return;
+  assert.equal(huge.status, 400);
+});
+
 test("aggregates duplicate lines and uses catalogue priceId", () => {
   const plan = planInventoryDecrements(
     [ember],

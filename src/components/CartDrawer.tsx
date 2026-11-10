@@ -6,7 +6,7 @@ import { useCart } from "./CartProvider";
 import { ProductImage } from "./ProductImage";
 import { formatGbp, stockBadgeClass, stockBadgeLabel, stockStatus } from "@/lib/products";
 
-export function CartDrawer() {
+export function CartDrawer({ writesEnabled }: { writesEnabled: boolean }) {
   const { open, setOpen, detailed, subtotal, setQuantity, remove } = useCart();
   const reduceMotion = useReducedMotion();
   const slide = reduceMotion
@@ -108,7 +108,9 @@ export function CartDrawer() {
                 <span>{formatGbp(subtotal)}</span>
               </p>
               <p className="mt-2 text-xs text-muted">
-                Demo order — stock updated in GHL, nothing charged.
+                {writesEnabled
+                  ? "Nothing is charged. A public checkout is not a live order — stock changes only for a signed-in operator."
+                  : "Demo only — nothing is charged and this is not a live order. Stock is left unchanged."}
               </p>
               <Link
                 href="/shop/checkout"
